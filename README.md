@@ -11,3 +11,10 @@
   - The workbench design pattern allows for a layer of abstraction allowing workbenches to be tested in isolation from the 
     rest of the program
 
+# Branches
+ - Master: Contains all the files associated with the project so far, some for linux, some for windows, the ui files for the QtDesigner 
+   app, along with other misc files
+ - CNC_TOOLBOX_Dist_Linux: The Linux version of the project with unnecessary files removed, including the ui files and the sync files
+ - CNC_TOOLBOX_DIST_Windows: The windows version of the project with unnecessary files removed, and an .exe file that allows for the 
+   program to  be used with an "open with" program on windows systems
+
