@@ -35,7 +35,7 @@ def main():
                 if a is not None:
                     print(a)
                     try:
-                        p = subprocess.run('python -m pip install {}'.format(a))
+                        p = subprocess.run([sys.executable, "-m", "pip", "install", str(a)])
                         met_code = 1
                     except Exception as e:
                         met_code = 0
