@@ -1,0 +1,6 @@
+Develope Robust Exception handling and output to user for trouble shooting
+	- Checkbox to convert ft/min to in/min
+
+Put a find functionality for the plain text edit
+
+Create a github account to make working with all this a lot easier
