@@ -1,0 +1,7 @@
+a python script for each machine for easy editing
+gui
+ability to create macro's based on user conditions
+ability to generate warnings
+ability to override reference coordinate system
+ability to delete letters from the middle of strings
+interface for adding new machines
