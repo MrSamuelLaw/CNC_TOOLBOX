@@ -8,7 +8,7 @@ import os
 import sys
 import subprocess
 import tools.sync_ui
-tools.sync_ui.sync()
+# tools.sync_ui.sync()
 from my_mainwindow import *
 
 

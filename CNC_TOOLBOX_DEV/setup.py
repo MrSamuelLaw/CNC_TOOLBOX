@@ -23,8 +23,8 @@ def main():
     if int(sys.version[0]) == 3:
         met_code = 0
         dependencies = [
-            'auto_py_to_exe',
             'PySide2',
+            'pyperclip'
         ]
         try:
             pkg_resources.require(dependencies)
@@ -35,8 +35,15 @@ def main():
                 if a is not None:
                     print(a)
                     try:
-                        p = subprocess.run([sys.executable, "-m", "pip", "install", str(a)])
-                        met_code = 1
+                        p = subprocess.run([sys.executable,
+                                            "-m",
+                                            "pip",
+                                            "install",
+                                            str(a)]
+                                           )
+                        if p.returncode == 0:
+                            print("successfully install {}".format(str(a)))
+                            met_code = 1
                     except Exception as e:
                         met_code = 0
                         print(e)
