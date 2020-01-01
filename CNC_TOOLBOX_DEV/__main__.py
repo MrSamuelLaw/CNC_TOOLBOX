@@ -1,14 +1,12 @@
 #!/usr/bin/env python
 
 
-'''
-main script from which the unit testing will be performed
-'''
 import os
 import sys
 import subprocess
 import tools.sync_ui
-# tools.sync_ui.sync()
+if False:
+    tools.sync_ui.sync()
 from my_mainwindow import *
 
 
