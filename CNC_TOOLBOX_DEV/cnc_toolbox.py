@@ -3,15 +3,19 @@
 
 import pathlib
 import os
+import platform
 import subprocess
 from sys import argv
 
 
 def main():
     cmd = list()
-    cmd.append('pythonw')
+    if platform.system() == 'Windows':
+        cmd.append('pythonw')
+    elif platform.system() == 'Linux':
+        cmd.append('python3')
     folder = str(os.path.dirname(os.path.realpath(argv[0])))
-    cmd.append(folder + "\\__main__.py")
+    cmd.append(folder + "/__main__.py")
     cmd.append(folder)
     if len(argv) > 1:
         cmd.append(argv[1])
