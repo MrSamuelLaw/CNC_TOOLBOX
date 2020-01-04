@@ -18,5 +18,12 @@
             "program": "${workspaceFolder}/__main__.py",
             "console": "integratedTerminal"
         }
+        {
+            "name": "setup",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/setup.py",
+            "console": "integratedTerminal"
+        }
     ]
 }
