@@ -13,7 +13,7 @@ sudo code
 '''
 
 import sys
-import os
+import platform
 import pkg_resources
 import subprocess
 from pkg_resources import DistributionNotFound, VersionConflict
@@ -23,33 +23,51 @@ still need to make it install the packages
 necessary for pyperclip to run
 '''
 
+def linux_extra_sauce():
+    linux_dependencies = [
+            'xclip',
+            'xsel'
+    ]
+    for d in linux_dependencies:
+        try:  # figure out how to run like in terminal
+            p = subprocess.run(["which",str(d)])
+            if p.returncode:
+                try:
+                    p = subprocess.run(['sudo', 'apt-get', 'install', str(d)])
+                except Exception as e:
+                    print(e)
+        except Exception as e:
+            print(e)
+
+
 def main():
-    if int(sys.version[0]) == 3:
-    
-        dependencies = [
-            'setuptools',
+    if int(sys.version[0]) == 3:  # make sure python3 is being used
+        dependencies = [  # define depends
+            'setuptools', 
             'PySide2',
             'pyperclip'
         ]
         for d in dependencies:
             try:
-                pkg_resources.require(d)    
+                if pkg_resources.require(d):  # check if met
+                    print(d,' dependency is met') 
             except Exception as e:
-                print(e)
-                for a in e.args:
-                    if a is not None:
-                        print(a)
-                        try:
-                            p = subprocess.run([sys.executable,
-                                                "-m"
-                                                "pip",
-                                                "install",
-                                                str(a)]
-                                              )
-                            if p.returncode == 0:
-                                print("successfully install {}".format(str(a)))     
-                        except Exception as e:
-                            print(e)
+                for a in list(filter(None, e.args)):
+                    try:  # if not met install it
+                        p = subprocess.run([sys.executable,
+                                            "-m"
+                                            "pip",
+                                            "install",
+                                            str(a)]
+                                           )
+                        if p.returncode == 0:
+                            pass
+                        else:
+                            print(str(a),' may not have installed correctly')
+                    except Exception as e:
+                        print(e)
+        if platform.system() == 'Linux':
+            linux_extra_sauce()
     else:
         print('please run with python3 not python2')
 
