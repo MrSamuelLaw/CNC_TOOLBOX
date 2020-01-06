@@ -13,43 +13,64 @@ sudo code
 '''
 
 import sys
-import os
-import pkg_resources
+import platform
 import subprocess
-from pkg_resources import DistributionNotFound, VersionConflict
+
+
+def linux_extra_sauce():
+    linux_dependencies = [
+            'xclip',
+            'xsel'
+    ]
+    for d in linux_dependencies:
+        try:  # figure out how to run like in terminal
+            p = subprocess.run(["which", str(d)])
+            if p.returncode:
+                try:
+                    p = subprocess.run(['sudo', 'apt-get', 'install', str(d)])
+                except Exception as e:
+                    print(e)
+        except Exception as e:
+            print(e)
 
 
 def main():
-    if int(sys.version[0]) == 3:
-        met_code = 0
-        dependencies = [
+    if int(sys.version[0]) == 3:  # make sure python3 is being used
+        dependencies = [  # define depends
+            'setuptools',
             'PySide2',
             'pyperclip'
         ]
+        installed_packages = []
         try:
-            pkg_resources.require(dependencies)
-            met_code = 1
-        except Exception as e:
-            met_code = 0
-            for a in e.args:
-                if a is not None:
-                    print(a)
-                    try:
+            packages = subprocess.run([sys.executable, '-m', 'pip', 'list'], stdout=subprocess.PIPE)
+            for p in list(packages.stdout.split()):
+                s = str(p)[1:].replace("'", "")
+                installed_packages.append(s)
+
+            # reqs = subprocess.check_output([sys.executable, '-m', 'pip', 'freeze'])
+            # installed_packages = [r.decode().split('==')[0] for r in reqs.split()]
+            for d in dependencies:
+                if d in installed_packages:
+                    print(d, 'dependency is met')
+                else:
+                    try:  # if not met install it
                         p = subprocess.run([sys.executable,
-                                            "-m",
+                                            "-m"
                                             "pip",
                                             "install",
-                                            str(a)]
+                                            str(d)]
                                            )
                         if p.returncode == 0:
-                            print("successfully install {}".format(str(a)))
-                            met_code = 1
+                            pass
+                        else:
+                            print(str(a), ' may not have installed correctly')
                     except Exception as e:
-                        met_code = 0
                         print(e)
-        if met_code:
-            print('all depends met')
-
+        except Exception as e:
+            print(e)
+        if platform.system() == 'Linux':
+            linux_extra_sauce()
     else:
         print('please run with python3 not python2')
 
@@ -57,3 +78,4 @@ def main():
 if __name__ == "__main__":
     main()
     input("Press <enter> to exit")
+

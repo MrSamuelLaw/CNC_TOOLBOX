@@ -39,7 +39,7 @@ class my_sherline_lathe_wb(Ui_sherline_lathe_workbench):
             units = 'in'
         formatter = sw_2_linuxCNC_formatter()
         contents = formatter.format(contents, units, offset)
-        if self.number_checkbox.isChecked():
+        if not self.number_checkbox.isChecked():
             contents = formatter.remove_line_numbers()
         # send to parent
         self.text_area.clear()
@@ -66,8 +66,8 @@ class my_sherline_lathe_wb(Ui_sherline_lathe_workbench):
                 rpm = float(form.rpm_lineEdit.text())
                 output = s.surface(unit, depth, length, rpm, feed)
             except Exception as e:
-                output = e
-            pyperclip.copy(str(output))
+                output = str(e)
+            pyperclip.copy(output)
 
     def parting_script(self):
         # set up the form
@@ -89,8 +89,8 @@ class my_sherline_lathe_wb(Ui_sherline_lathe_workbench):
                 diameter = float(form.diameter_lineEdit.text())
                 output = p.part(unit, speed, diameter, feed)
             except Exception as e:
-                output = e
-            pyperclip.copy(str(output))
+                output = str(e)
+            pyperclip.copy(output)
 
     def load_parent_elments(self, parent):
         self.text_area = parent.text_area

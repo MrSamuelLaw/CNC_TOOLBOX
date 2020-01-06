@@ -159,18 +159,15 @@ class sw_2_linuxCNC_formatter():
     def _renumber_lines(self):
         self._parse_and_delete('N')
         self._parse_and_delete('%')
-        contents = ""
-        num = 0
-        for line in self._file_contents.splitlines():
-            if num > 0 and len(line) > 0:
-                contents += ('N{} '.format(num)+line+'\n')
-                num += 1
-            elif num == 0:
-                contents += (line+'\n')
-                num += 1
+        contents = ''
+        offset = 0
+        for i, line in enumerate(self._file_contents.splitlines(), start=1):
+            if len(line):
+                contents += 'N{0} '.format(i+offset)+line+'\n'
             else:
-                contents += ('\n')
-        self._file_contents = (contents.rstrip()+'\n%')
+                contents += '\n'
+                offset += -1
+        self._file_contents = contents.rstrip()+'\n%'
         return 7
 
     def _remove_number_lines(self):
