@@ -13,8 +13,11 @@ sudo code
 '''
 
 import sys
+import os
+import site
 import platform
 import subprocess
+import shutil
 
 
 def linux_extra_sauce():
@@ -34,12 +37,29 @@ def linux_extra_sauce():
             print(e)
 
 
+def install_packages():
+    if site.ENABLE_USER_SITE:
+        dst = site.USER_SITE
+        cwd = os.path.dirname(os.path.realpath(sys.argv[0]))
+        src = os.path.join(cwd,'packages/gscrape.py')
+        try:
+            shutil.copy(src, dst)
+        except Exception as e:
+            print(e)
+
+
+def create_venv():
+    pass
+    # flesh out plan to create local venv and have
+    # the program use it by default
+
+
 def main():
     if int(sys.version[0]) == 3:  # make sure python3 is being used
         dependencies = [  # define depends
-            'setuptools',
-            'PySide2',
-            'pyperclip'
+        'setuptools',
+        'pyside2==5.13',
+        'pyperclip'
         ]
         installed_packages = []
         try:
@@ -71,6 +91,8 @@ def main():
             print(e)
         if platform.system() == 'Linux':
             linux_extra_sauce()
+
+        install_packages()
     else:
         print('please run with python3 not python2')
 

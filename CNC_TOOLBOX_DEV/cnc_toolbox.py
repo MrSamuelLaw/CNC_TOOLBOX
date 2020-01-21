@@ -11,6 +11,7 @@ from sys import argv
 def main():
     cmd = list()
     if platform.system() == 'Windows':
+        # put in a bit here to search for venv is it exists
         cmd.append('pythonw')
     elif platform.system() == 'Linux':
         cmd.append('python3')

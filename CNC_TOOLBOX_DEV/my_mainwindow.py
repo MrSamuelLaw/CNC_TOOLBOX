@@ -3,6 +3,7 @@
 from gui.mainwindow import *
 from PySide2.QtWidgets import QFileDialog
 from os import path
+from collections import deque
 import os
 import sys
 
@@ -23,6 +24,9 @@ class my_mainwindow(Ui_MainWindow):
         self.menubar.addAction("save as", self.save_as)
         self.device_comboBox.currentIndexChanged.connect(self.load_workbench)
         self.save_button.clicked.connect(self.save_file)
+
+        # add an additional function to the plainTextEdit
+        self.text_area.clearText = self.clearText
 
         # load the wb combo box
         self.device_comboBox.addItem('start menu')
@@ -70,7 +74,7 @@ class my_mainwindow(Ui_MainWindow):
         browser = QFileDialog()
         if browser.exec_():
             files = browser.selectedFiles()
-            print(files)
+            # print(files)
             self._file = files[0]
             self.file_field.setText(str(path.basename(self._file)))
             with open(self._file, 'w') as f:
@@ -157,3 +161,14 @@ class my_mainwindow(Ui_MainWindow):
         self.frame.setObjectName("frame")
         # add it back into the layout
         self.gridLayout.addWidget(self.frame, 0, 0, 1, 1)
+
+    def clearText(self):
+        '''clears text while preserving the plainTextEdit's undo stack
+        '''
+        # create a instance of a Q cursor with text doc as parent
+        curs = QtGui.QTextCursor(self.text_area.document())
+        # select all the content
+        curs.select(QtGui.QTextCursor.Document)
+        # delete all the content
+        curs.deleteChar()
+        curs.setPosition(0)

@@ -3,22 +3,11 @@
 '''
 python class that reads in user's nc files from solidworks cam
 and edits them to be compatible with linuxCNC
-
-positive return values indicate an operation was performed successfully
-negative values indicate an operation failed
-
-all return values are unique to help in identifing problems
 '''
 
 
 import os.path
-
-
-'''
-Patch Requests
-    - fix error when attempting to change offset of safety line
-        where the old safetly line stays in
-'''
+from gscrape import gscrape
 
 
 def d(msg, ovr=0):
@@ -31,280 +20,211 @@ def d(msg, ovr=0):
 class sw_2_linuxCNC_formatter():
 
     _file_contents = None
-    unit_dict = {"in": "G20", "mm": "G21"}
+    _unit_dict = {"in": "G20", "mm": "G21"}
     _units = None
-    offset_list = ["G54", "G55", "G56", "G57", "G58", "G59"]
+    _offset_list = ["G54", "G55", "G56", "G57", "G58", "G59"]
     _offset = None
     _work_plane = "G18"  # G18 is the xz plane which is a constant on a lathe
     _eof_list = ["M2", "M30"]  # End Of File
     _spindle_mode = 'G97'  # G97 is const rpm mode
 
     def __init__(self):
-        pass
+        self.g = gscrape()
+        self.g.add_comment_flag('round', [('(', -1), (')', 1)])
+        self.g.add_comment_flag('semicolon_left', [(';', 0)])
 
     def format(self, contents, units, offset):
-        self._load_contents(contents)
-        self._set_units(units)
-        self._set_offset(offset)
-        self._delete_B_commands()
-        self._insert_safety_line()
-        self._fix_spindle_cmds()
-        self._fix_T_commands()
-        self._fix_eof()
-        self._renumber_lines()
-        return self._file_contents
+        self.load_contents(contents)
+        self.set_units(units)
+        self.set_offset(offset)
+        self.delete_B_commands()
+        self.insert_safety_line()
+        self.fix_spindle_cmds()
+        self.fix_T_commands()
+        self.fix_eof()
+        self.renumber_lines()
+        return self.get_text()
 
     def remove_line_numbers(self):
-        self._remove_number_lines()
-        return self._file_contents
+        self.remove_number_lines()
+        text = self.g.to_text(self._file_contents)
+        return text.lstrip()
+        
+    def load_contents(self, contents):
+        self._file_contents = self.g.sort_gcode(contents)
 
-    def _load_file(self, path):
-        if (os.path.exists(path)):
-            if (os.path.splitext(path)[-1].lower() != ".nc"):
-                d("file is not a .nc file")
-                return -2
-            else:
-                inFile = open(path, 'r')
-                self._file_contents = inFile.read()
-                d("file read into memory")
-                inFile.close()
-                return 1
-        else:
-            d("path to file is corrupt or invalid")
-            return -1
-
-    def _load_contents(self, contents):
-        self._file_contents = contents
-
-    def _set_units(self, units):
-        if units.lower() not in self.unit_dict.keys():
+    def set_units(self, units):
+        if units.lower() not in self._unit_dict.keys():
             d("unit options are in or mm")
-            return -3
+            return -1
         else:
             self._units = units.lower()
             d("units set to {}".format(self._units))
-            return 2
+            return None
 
-    def _set_offset(self, offset="G54"):
+    def set_offset(self, offset="G54"):
         pass
-        if offset.upper() not in self.offset_list:
+        if offset.upper() not in self._offset_list:
             d("offset is not valid")
-            return -4
+            return -1
         else:
             self._offset = offset.upper()
-            return 3
+            return None
 
-    def _insert_safety_line(self):
-        # define the current safety line
-        if(self._units and self._offset is not None):
-            safety_line = ("{0} {1} {2} {3}".format(self.unit_dict[self._units],
-                                                    self._offset,
-                                                    self._work_plane,
-                                                    self._spindle_mode))
-            # check for unit variations
-            for code in self.unit_dict.values():
-                line = safety_line.replace(self.unit_dict[self._units], code)
-                if line in self._file_contents:
-                    self._file_contents = self._file_contents.replace(
-                                               line, safety_line)
-                    break
-            # check for offset variations
-            for code in self.offset_list:
-                line = safety_line.replace(self._offset, code)
-                if line in self._file_contents:
-                    self._file_contents = self._file_contents.replace(
-                                               line, safety_line)
-            # no alternate versions of the safety line exist, insert
-            # safety line on the second line
-            if safety_line not in self._file_contents:
-                contents = self._file_contents.splitlines()
-                contents.insert(1, safety_line)
-                self._file_contents = '\n'.join(contents)
-                return 8
-        else:
-            d("units or offsets are not set")
-            return -5
+    def _in_text(self, code, text):
+        code = list(code)
+        result = []
+        for c in code:
+            find = ([x for x in text if x[1] == 'code' and c in x[0]])
+            if len(find):
+                result.append(find)
+        return result
 
-    def _delete_B_commands(self):
-        self._parse_and_delete('B')
-        return 4
-
-    def _fix_T_commands(self):
-        g = self._get_search_index
-        content = ""
-        for line in self._file_contents.splitlines():
-            if len(list(g('T', line))) > 0:
-                index = list(g('T', line))[0]
-                for i in range(index, (len(line)-1)):
-                    if line[i+1].isalpha():
-                        tool = line[index:i]
-                        line = line[::index]
-                        break
-                    elif i == (len(line)-2):
-                        tool = line[index::]
-                        line = line[0:index]
-                msg = self._format_message('load tool number ' +
-                                           tool[1::])
-                content += (msg+'\nM0\n')
-            content += (line.lstrip()+'\n')
-        self._file_contents = content
-        return 5
-
-    def _fix_eof(self):
-        for command in self._eof_list:
-            self._delete_after_keyword(command, self._file_contents)
-        self._file_contents += ('\n%')
-        return 6
-
-    def _renumber_lines(self):
-        self._parse_and_delete('N')
-        self._parse_and_delete('%')
-        contents = ''
-        offset = 0
-        for i, line in enumerate(self._file_contents.splitlines(), start=1):
-            if len(line):
-                contents += 'N{0} '.format(i+offset)+line+'\n'
+    def _insert_line(self, code, lnum, text):
+        # sort code to insert
+        code = self.g.sort_gcode(code)
+        # renumber code to insert
+        for x in code:
+            x[2] = lnum
+        # renumber file contents
+        for x in text:
+            if x[2] >= lnum:
+                x[2] += 1
+        # insert code
+        for i, x in enumerate(text):
+            if x[2] < lnum:
+                pass
             else:
-                contents += '\n'
-                offset += -1
-        self._file_contents = contents.rstrip()+'\n%'
-        return 7
+                text[i:i] = code
+                break
+        return text
 
-    def _remove_number_lines(self):
-        self._parse_and_delete('N')
-        return 9
+    def insert_safety_line(self):
+        # define the current safety line
+        if self._units and self._offset is not None:
+            safety_line = self._unit_dict[self._units]+' '
+            safety_line += self._offset+' '
+            safety_line += self._work_plane+' '
+            safety_line += self._spindle_mode+' '
+            safety_line = str(safety_line)
+            # check for unit variations
+            r = self._in_text(self._unit_dict.values(), self._file_contents)
+            if len(r):
+                safety_line = safety_line.replace(self._unit_dict[self._units], '')
+            # check for offset variations
+            r = self._in_text(self._offset_list, self._file_contents)
+            if len(r):
+                safety_line = safety_line.replace(self._offset, '')
+            # check for constants in safety line
+            r = self._in_text([self._work_plane], self._file_contents)
+            if len(r):
+                safety_line = safety_line.replace(self._work_plane, '')
+            r = self._in_text([self._spindle_mode], self._file_contents)
+            if len(r):
+                if r[0][0][2] < 10:  # make sure the G97 is before any motor commands
+                    safety_line = safety_line.replace(self._spindle_mode, '')
+            # insert the appropriate safetly line on line 2
+            self._file_contents = self._insert_line(safety_line, 1,
+                                                    self._file_contents)
 
-    def _fix_spindle_cmds(self):
-        g = self._get_search_index
-        smf = -1  # spindle_mode_flag
-        content = ""
-        sliding_window = ['', '']
-        for line in self._file_contents.splitlines():
-            if len(list(g('G97', line))) > 0:
-                smf = 1
-            elif len(list(g('G96', line))) > 0:
-                smf = 2
-                # line = line.replace('G96', 'G97')
-                warning = 'WARNING, G96 NOT SUPPORTED'
-                msg = self._format_message(warning)
-                if warning not in content:
-                    content = msg+'\nM0\n' + content
-            elif len(list(g('G50', line))) > 0:
-                smf = 3
-            if len(list(g('S', line))) > 0:
-                if smf == 1:
-                    index = list(g('S', line))[0]
-                    for i in range(index, (len(line)-1)):
-                        if line[i+1].isalpha():
-                            spd = line[index:i]
-                            break
-                        elif i == (len(line)-2):
-                            spd = line[index::]
-                    msg = self._format_message('please set rpm to '
-                                               + spd[1::] +
-                                               ' RPM')
-                    # check to ensure that it is not
-                    # unneccessaryly duplicating a command
-                    if msg and 'M0' not in "".join(sliding_window):
-                        content += (msg+'\n'+'M0\n')
-                elif smf == 2:
-                    index = list(g('S', line))[0]
-                    for i in range(index, (len(line)-1)):
-                        if line[i+1].isalpha():
-                            spd = line[index:i]
-                            break
-                        elif i == (len(line)-2):
-                            spd = line[index::]
-                    msg = self._format_message('please set rpm to '
-                                               + spd[1::] +
-                                               ' RPM')
-                    if msg and 'M0' not in "".join(sliding_window):
-                        content += (msg+'\n'+'M0\n')
-                elif smf == 3:
-                    index = list(g('S', line))[0]
-                    for i in range(index, (len(line)-1)):
-                        if line[i+1].isalpha():
-                            spd = line[index:i]
-                            break
-                        elif i == (len(line)-2):
-                            spd = line[index::]
-                    line = line.replace('G50', '')
-                    line = line.replace(spd, '')
-                    content += line
-                else:
-                    d("WARNING feed set without spindle mode")
-            content += (line.lstrip()+'\n')
-            sliding_window[0], sliding_window[1] = sliding_window[1], line
-        self._file_contents = content
+    def delete_B_commands(self):
+        del_list = []
+        for i, x in enumerate(self._file_contents):
+            if x[1] == 'code' and 'B' in x[0]:
+                del_list.append(i)
+        # do the deleting
+        for i, d in enumerate(del_list):
+            del self._file_contents[d-i]
 
-    def _parse_and_delete(self, command_string):
-        # set the command string to 'B' to delete all B commands
-        # to delete subsets of commands set the command string to 'B90'
-        # to only delete B90 commands, not any other B commands
+    def fix_T_commands(self):
+        for i, x in enumerate(self._file_contents):
+            if 'T' in x[0] and x[1] == 'code':
+                tool = list(x[0])
+                while tool[1] == '0':
+                    del tool[1]
+                while '.' in tool:
+                    tool.remove('.')
+                x[0] = ''.join(tool)
+                swap = ['M6', 'code', x[2]]  # gcode for tool swap
+                oset = ['G43', 'code', x[2]]  # gcode to update tool offsets
+                if self._file_contents[i+1][0] != 'M6':  # prevents duplicates
+                    self._file_contents[i+1:i+1] = [swap, oset]
 
-        if command_string in self._file_contents:
-            parsed_content = ""
-            g = self._get_search_index
-            for line in self._file_contents.splitlines():
-                word_cnt = 0
-                offset = 0
-                index = list(g(command_string, line))
-                while len(index) > word_cnt:
-                    for i in index:
-                        i -= offset
-                        if i == (len(line)-1):
-                            line = line[0:i]
-                        else:
-                            for j in range(i, (len(line)-1)):
-                                if line[j+1].isalpha() or line[j+1] == '(':
-                                    if j == i:
-                                        word_cnt += 1
-                                        break
-                                    else:
-                                        line = line[0:i]+line[(j+1)::]
-                                        offset = (j+1-i)
-                                        break
-                                elif j == (len(line)-2):
-                                    line = line[0:i]
-                    index = list(g(command_string, line))
-                parsed_content += (line+'\n')
-            self._file_contents = parsed_content
-        else:  # command string is not in file contents, nothing happens
-            d("no {} commands found".format(command_string))
+    def fix_eof(self):
+        for i, x in enumerate(self._file_contents):
+            if x[1] == 'code' and x[0] in self._eof_list:
+                self._file_contents = self._file_contents[0:i+1]
+                eof = ['%', 'code', x[2] + 1]
+                self._file_contents.append(eof)
 
-    def _get_search_index(self, command_string, line):
+    def renumber_lines(self):
+        self.remove_number_lines()
+        # load up each line
+        line_dict = {}
+        oset = 0
+        for x in self._file_contents:
+            if x[2] not in line_dict.keys():
+                line_dict[x[2]] = [x]
+            else:
+                line_dict[x[2]].append(x)
+        self._file_contents.clear()
+        for i, k in enumerate(sorted(line_dict.keys())):
+            if line_dict[k][0][0] == '%':
+                for x in line_dict[k]:
+                    x[2] = i
+                self._file_contents.extend(line_dict[k])
+                break
+            elif line_dict[k][0][1] != 'blank':
+                self._file_contents.append(['N{}'.format(i+1+oset), 'code', i])
+            else:
+                oset -= 1
+            for x in line_dict[k]:
+                x[2] = i
+            self._file_contents.extend(line_dict[k])
 
-        window_size = len(command_string)
-        bracket_count = 0
+    def remove_number_lines(self):
+        # find which items need to be deleted
+        del_list = []
+        for i, x in enumerate(self._file_contents):
+            if x[1] == 'code' and 'N' in x[0]:
+                del_list.append(i)
+        # do the deleting
+        for i, d in enumerate(del_list):
+            del self._file_contents[d-i]
 
-        for i in range(0, len(line)):
-            if bracket_count:
-                if line[i] == ')':
-                    bracket_count += 1
-                else:
-                    pass
-            elif line[i] == '(':
-                bracket_count -= 1
-            if not bracket_count:
-                j = i + window_size
-                if line[i:j] == command_string:
-                    yield i
+    def fix_spindle_cmds(self):
 
-    def _delete_after_keyword(self, keyword, line):
-        delete_index = list(self._get_search_index(keyword, line))
+        check_val = 0 # prevents infinite loops
+        for i, x in enumerate(self._file_contents):
+            if x[1] == 'code':
+                if x[0] == 'G96':
+                    x[0] = '(G96)'
+                    x[1] == 'comment'
+                    c = ['(Warning, G96 cmds not supported)', 'comment', 0]
+                    self._file_contents.insert(0, c)
+                if 'S' in x[0] and i != check_val:
+                    line = '(MSG please set rpm to {})'.format(x[0][1:])
+                    coms = [j[0] for j in self._file_contents if j[1] == 'comment' and j[2] < x[2]]
+                    if line not in coms:
+                        line += ' M0'
+                        self._insert_line(line, (x[2]), self._file_contents)
+                        check_val = i+2
 
-        if len(delete_index) > 1:
-            d("multiple instances of {} found for\n"
-              "delete after keyword command".format(keyword))
-            return -4
-        if len(delete_index) == 0:
-            d("no instances of {} found for\n"
-              "delete after keyword command".format(keyword))
-            return -5
+    def make_tool_tbl(self):
+        tool_tbl = []
+        P = 1
+        for x in self._file_contents:
+            if x[1] == 'code' and 'T' in x[0]:
+                tool = list(x[0])
+                while tool[1] == '0':
+                    del tool[1]
+                while '.' in tool:
+                    tool.remove('.')
+                x[0] = ''.join(tool)
+                tool_tbl.append([''.join(tool), P])
+                P += 1
+        return tool_tbl
 
-        delete_index[0] = delete_index[0] + len(keyword)
-        self._file_contents = self._file_contents[0:delete_index[0]]
-        return 5
-
-    def _format_message(self, text):
-        return("(MSG, {})".format(text))
+    def get_text(self):
+        text = gscrape().to_text(self._file_contents)
+        return text

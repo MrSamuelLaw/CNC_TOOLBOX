@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'c:\Users\Samuel\Documents\CodingProjects\Python\in_progress\CNC_TOOL_BOX\CNC_TOOLBOX_DEV\wb\shop_bot\gui\shob_bot_wb.ui',
-# licensing of 'c:\Users\Samuel\Documents\CodingProjects\Python\in_progress\CNC_TOOL_BOX\CNC_TOOLBOX_DEV\wb\shop_bot\gui\shob_bot_wb.ui' applies.
+# Form implementation generated from reading ui file 'c:\Users\Samuel\Documents\CodingProjects\Python\in_progress\CNC_TOOLBOX_DEV\CNC_TOOLBOX_DEV\wb\shop_bot\gui\shob_bot_wb.ui',
+# licensing of 'c:\Users\Samuel\Documents\CodingProjects\Python\in_progress\CNC_TOOLBOX_DEV\CNC_TOOLBOX_DEV\wb\shop_bot\gui\shob_bot_wb.ui' applies.
 #
-# Created: Thu Dec 26 08:54:31 2019
+# Created: Fri Jan 17 12:28:31 2020
 #      by: pyside2-uic  running on PySide2 5.13.0
 #
 # WARNING! All changes made in this file will be lost!

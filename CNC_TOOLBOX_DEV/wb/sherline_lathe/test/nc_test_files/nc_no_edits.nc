@@ -1,6 +1,8 @@
 O0001
+G20
+B90.
 N1 (Sherline E 1/4")
-N2 T0000.0
+N2 T0101
 N3 G00 S503 M04
 
 N4 ( Face Rough1 )

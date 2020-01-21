@@ -1,4 +1,8 @@
 #!/usr/bin/env python
+'''known issues
+has leading spaces
+
+'''
 
 
 from wb.sherline_lathe.gui.sherline_lathe_wb import *
@@ -7,23 +11,24 @@ from wb.sherline_lathe.gui.parting_dialog import *
 from wb.sherline_lathe.sw_2_linuxCNC_formatter import sw_2_linuxCNC_formatter
 from wb.sherline_lathe.lathe_surfacing import lathe_surfacing
 from wb.sherline_lathe.lathe_parting import lathe_parting
+from PySide2.QtWidgets import QFileDialog
+
 import pyperclip
 
 
 class my_sherline_lathe_wb(Ui_sherline_lathe_workbench):
 
     def run_integrated(self, parent):
-        '''
-        use this to run the workbench in the
-        parent module
-        '''
+
         self.load_parent_elments(parent)
         self.setupUi(self.frame)
 
         # put functions here
+        self.text_area.appendPlainText(self.text_area.toPlainText())
         self.format_button.clicked.connect(self.format_file)
         self.surfacing_pushButton.clicked.connect(self.surface_script)
         self.parting_pushButton.clicked.connect(self.parting_script)
+        self.tool_table_pushButton.clicked.connect(self.generate_tool_table)
 
         # return instance to parent so that the
         # parent can keep it alive, otherwise it dies immediatly
@@ -41,9 +46,8 @@ class my_sherline_lathe_wb(Ui_sherline_lathe_workbench):
         contents = formatter.format(contents, units, offset)
         if not self.number_checkbox.isChecked():
             contents = formatter.remove_line_numbers()
-        # send to parent
-        self.text_area.clear()
-        self.text_area.insertPlainText(contents)
+        self.text_area.clearText()
+        self.text_area.appendPlainText(contents)
 
     def surface_script(self):
         # set up the form
@@ -91,6 +95,21 @@ class my_sherline_lathe_wb(Ui_sherline_lathe_workbench):
             except Exception as e:
                 output = str(e)
             pyperclip.copy(output)
+
+    def generate_tool_table(self, text):
+        pass
+        # contents = self.text_area.toPlainText()
+        # formatter = sw_2_linuxCNC_formatter()
+        # crib = formatter.make_tool_tbl(contents)
+        # file_name = 'tool.tbl'
+        # browser = QFileDialog()
+        # browser.setFileMode(QFileDialog.DirectoryOnly)
+        # if browser.exec_():
+        #     folder = browser.selectedFiles()[0]
+        #     path = str(folder)+'/'+file_name
+        #     print(path)
+        #     with open(path, 'w') as f:
+        #         f.write(crib)
 
     def load_parent_elments(self, parent):
         self.text_area = parent.text_area
