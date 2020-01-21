@@ -47,8 +47,7 @@ class sw_2_linuxCNC_formatter():
 
     def remove_line_numbers(self):
         self.remove_number_lines()
-        text = self.g.to_text(self._file_contents)
-        return text.lstrip()
+        return self.g.to_text(self._file_contents)
         
     def load_contents(self, contents):
         self._file_contents = self.g.sort_gcode(contents)
