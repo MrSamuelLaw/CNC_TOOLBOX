@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'c:\Users\Samuel\Documents\CodingProjects\Python\in_progress\CNC_TOOLBOX_DEV\CNC_TOOLBOX_DEV\gui\mainwindow.ui',
-# licensing of 'c:\Users\Samuel\Documents\CodingProjects\Python\in_progress\CNC_TOOLBOX_DEV\CNC_TOOLBOX_DEV\gui\mainwindow.ui' applies.
+# Form implementation generated from reading ui file '/home/samuel/Desktop/CNC_TOOLBOX/CNC_TOOLBOX/gui/mainwindow.ui',
+# licensing of '/home/samuel/Desktop/CNC_TOOLBOX/CNC_TOOLBOX/gui/mainwindow.ui' applies.
 #
-# Created: Fri Jan 17 12:28:29 2020
+# Created: Thu Jan 23 11:50:02 2020
 #      by: pyside2-uic  running on PySide2 5.13.0
 #
 # WARNING! All changes made in this file will be lost!
@@ -74,7 +74,7 @@ class Ui_MainWindow(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setObjectName("scrollArea")
         self.scrollAreaWidgetContents = QtWidgets.QWidget()
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 765, 526))
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 769, 524))
         self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
         self.gridLayout_5 = QtWidgets.QGridLayout(self.scrollAreaWidgetContents)
         self.gridLayout_5.setObjectName("gridLayout_5")
@@ -93,7 +93,7 @@ class Ui_MainWindow(object):
         self.gridLayout_3.addWidget(self.splitter, 1, 0, 1, 7)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 789, 21))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 789, 23))
         self.menubar.setObjectName("menubar")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
@@ -110,7 +110,7 @@ class Ui_MainWindow(object):
         self.current_file_label.setText(QtWidgets.QApplication.translate("MainWindow", "current file", None, -1))
         self.device_label.setText(QtWidgets.QApplication.translate("MainWindow", "device", None, -1))
         self.save_button.setText(QtWidgets.QApplication.translate("MainWindow", "Save", None, -1))
-        self.save_copy.setText(QtWidgets.QApplication.translate("MainWindow", "copy", None, -1))
+        self.save_copy.setText(QtWidgets.QApplication.translate("MainWindow", "cop", None, -1))
         self.overwrite_radio.setText(QtWidgets.QApplication.translate("MainWindow", "overwrite", None, -1))
         self.actionopen.setText(QtWidgets.QApplication.translate("MainWindow", "open", None, -1))
 

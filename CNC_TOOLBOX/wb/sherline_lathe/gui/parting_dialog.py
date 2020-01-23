@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'c:\Users\Samuel\Documents\CodingProjects\Python\in_progress\CNC_TOOLBOX_DEV\CNC_TOOLBOX_DEV\wb\sherline_lathe\gui\parting_dialog.ui',
-# licensing of 'c:\Users\Samuel\Documents\CodingProjects\Python\in_progress\CNC_TOOLBOX_DEV\CNC_TOOLBOX_DEV\wb\sherline_lathe\gui\parting_dialog.ui' applies.
+# Form implementation generated from reading ui file '/home/samuel/Desktop/CNC_TOOLBOX/CNC_TOOLBOX/wb/sherline_lathe/gui/parting_dialog.ui',
+# licensing of '/home/samuel/Desktop/CNC_TOOLBOX/CNC_TOOLBOX/wb/sherline_lathe/gui/parting_dialog.ui' applies.
 #
-# Created: Fri Jan 17 12:28:29 2020
+# Created: Thu Jan 23 11:50:02 2020
 #      by: pyside2-uic  running on PySide2 5.13.0
 #
 # WARNING! All changes made in this file will be lost!
