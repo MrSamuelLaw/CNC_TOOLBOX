@@ -98,6 +98,9 @@ class my_sherline_lathe_wb(Ui_sherline_lathe_workbench):
 
     def generate_tool_table(self, text):
         pass
+        # customized for the computer at work to over write
+        # the tool table file
+
         # contents = self.text_area.toPlainText()
         # formatter = sw_2_linuxCNC_formatter()
         # crib = formatter.make_tool_tbl(contents)

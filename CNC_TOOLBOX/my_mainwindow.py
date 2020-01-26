@@ -4,6 +4,7 @@ from gui.mainwindow import *
 from PySide2.QtWidgets import QFileDialog
 from os import path
 from collections import deque
+from platform import system
 import os
 import sys
 
@@ -26,6 +27,7 @@ class my_mainwindow(Ui_MainWindow):
         self.save_button.clicked.connect(self.save_file)
 
         # add an additional function to the plainTextEdit
+        #   that preserves the undo stack
         self.text_area.clearText = self.clearText
 
         # load the wb combo box
@@ -72,9 +74,15 @@ class my_mainwindow(Ui_MainWindow):
 
     def save_as(self):
         browser = QFileDialog()
+        # patch to allow the save as to work on linux
+        if system() == 'Linux':
+            options = QFileDialog.Options()
+            options |= QFileDialog.DontUseNativeDialog
+            options |= QFileDialog.DontUseCustomDirectoryIcons
+            browser.setLabelText(QtWidgets.QFileDialog.Accept, 'Save')
+            browser.setOptions(options)
         if browser.exec_():
             files = browser.selectedFiles()
-            # print(files)
             self._file = files[0]
             self.file_field.setText(str(path.basename(self._file)))
             with open(self._file, 'w') as f:
@@ -111,6 +119,7 @@ class my_mainwindow(Ui_MainWindow):
                 # be needed since we are returning to
                 # the start menu
                 self.frame.layout().deleteLater()
+                self.frame.hide()
         else:
             if self.frame.layout() is not None:
                 self.del_all_in_layout(self.frame.layout())
@@ -147,20 +156,28 @@ class my_mainwindow(Ui_MainWindow):
     def replace_frame(self):
         # capture the parent
         p = self.frame.parent()
+
+        # capture frame position
+        for i in range(self.gridLayout.count()):
+            type_ = str(self.gridLayout.itemAt(i).widget())
+            if 'QFrame' in type_:  # Make sure it is a QFrame
+                # row, col, rowspan, colspan
+                r, c, rs, cs = self.gridLayout.getItemPosition(i)
+
         # delete frame widget
         self.del_all_in_layout(self.gridLayout)
 
-        # the code below is ripped straight from the
+        # the code below is modified from the
         # file created py the pyuic that turns ui files
         # into python files.
 
         # replace the old frame that is now qued for deletion
-        self.frame = QtWidgets.QFrame(p)
+        self.frame = QtWidgets.QFrame(p)  # put parent
         self.frame.setFrameShape(QtWidgets.QFrame.NoFrame)
         self.frame.setFrameShadow(QtWidgets.QFrame.Raised)
         self.frame.setObjectName("frame")
         # add it back into the layout
-        self.gridLayout.addWidget(self.frame, 0, 0, 1, 1)
+        self.gridLayout.addWidget(self.frame, r, c, rs, cs)
 
     def clearText(self):
         '''clears text while preserving the plainTextEdit's undo stack

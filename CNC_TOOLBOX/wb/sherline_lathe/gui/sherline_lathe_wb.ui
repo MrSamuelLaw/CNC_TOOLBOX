@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>851</width>
-    <height>94</height>
+    <height>119</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -29,51 +29,20 @@
    <number>1</number>
   </property>
   <layout class="QGridLayout" name="gridLayout_2">
-   <item row="0" column="8">
-    <widget class="QPushButton" name="format_button">
-     <property name="maximumSize">
-      <size>
-       <width>125</width>
-       <height>16777215</height>
-      </size>
-     </property>
+   <property name="leftMargin">
+    <number>20</number>
+   </property>
+   <item row="0" column="1" rowspan="2">
+    <widget class="QLabel" name="label_2">
      <property name="text">
-      <string>format</string>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="4">
-    <widget class="QLabel" name="label">
-     <property name="text">
-      <string>offset
-(defaults to G54)</string>
+      <string>units</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>
      </property>
     </widget>
    </item>
-   <item row="0" column="0">
-    <spacer name="horizontalSpacer">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>40</width>
-       <height>20</height>
-      </size>
-     </property>
-    </spacer>
-   </item>
-   <item row="0" column="3">
-    <widget class="QPushButton" name="surfacing_pushButton">
-     <property name="text">
-      <string>surfacing</string>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="7">
+   <item row="0" column="2" rowspan="2">
     <widget class="QWidget" name="widget" native="true">
      <layout class="QGridLayout" name="gridLayout">
       <item row="0" column="0">
@@ -107,7 +76,7 @@
      </layout>
     </widget>
    </item>
-   <item row="0" column="5">
+   <item row="0" column="4" rowspan="2">
     <widget class="QLineEdit" name="offset_field">
      <property name="maximumSize">
       <size>
@@ -123,27 +92,99 @@
      </property>
     </widget>
    </item>
-   <item row="0" column="6">
-    <widget class="QLabel" name="label_2">
+   <item row="1" column="7">
+    <widget class="QPushButton" name="parting_pushButton">
+     <property name="minimumSize">
+      <size>
+       <width>35</width>
+       <height>0</height>
+      </size>
+     </property>
      <property name="text">
-      <string>units</string>
+      <string>parting</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="11" rowspan="2">
+    <spacer name="horizontalSpacer">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>40</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="0" column="3" rowspan="2">
+    <widget class="QPushButton" name="format_button">
+     <property name="maximumSize">
+      <size>
+       <width>125</width>
+       <height>16777215</height>
+      </size>
+     </property>
+     <property name="text">
+      <string>format</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="5" rowspan="2">
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>offset
+(defaults to G54)</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>
      </property>
     </widget>
    </item>
-   <item row="0" column="2">
-    <widget class="QPushButton" name="parting_pushButton">
+   <item row="0" column="7">
+    <widget class="QPushButton" name="tool_table_pushButton">
+     <property name="minimumSize">
+      <size>
+       <width>110</width>
+       <height>0</height>
+      </size>
+     </property>
      <property name="text">
-      <string>parting</string>
+      <string>make tool table</string>
      </property>
     </widget>
    </item>
-   <item row="0" column="1">
-    <widget class="QPushButton" name="tool_table_pushButton">
+   <item row="1" column="10">
+    <widget class="QPushButton" name="surfacing_pushButton">
+     <property name="minimumSize">
+      <size>
+       <width>35</width>
+       <height>0</height>
+      </size>
+     </property>
      <property name="text">
-      <string>make tool table</string>
+      <string>surfacing</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="10">
+    <widget class="QPushButton" name="ft_to_in_pushButton">
+     <property name="minimumSize">
+      <size>
+       <width>110</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="text">
+      <string>ft/min -&gt; in/min</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="6" rowspan="2">
+    <widget class="Line" name="line">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
      </property>
     </widget>
    </item>

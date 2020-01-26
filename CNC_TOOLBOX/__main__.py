@@ -12,7 +12,7 @@ from my_mainwindow import *
 
 def main():
     if len(sys.argv) > 1:
-        # if run externally
+        # if called from cnc_toolbox.py/exe externally
         # - argv[0] where the script was started from
         # - argv[1] exe directory
         # - argv[2] file to open's directory
@@ -20,7 +20,7 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    main() # call to collect cmd line arguments
     import sys
     app = QtWidgets.QApplication(sys.argv)
     app.startingUp()

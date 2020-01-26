@@ -48,7 +48,10 @@ class sw_2_linuxCNC_formatter():
     def remove_line_numbers(self):
         self.remove_number_lines()
         return self.g.to_text(self._file_contents)
-        
+
+    def ftmin_to_inmin(self):
+        pass
+
     def load_contents(self, contents):
         self._file_contents = self.g.sort_gcode(contents)
 
@@ -79,24 +82,23 @@ class sw_2_linuxCNC_formatter():
                 result.append(find)
         return result
 
-    def _insert_line(self, code, lnum, text):
+    def _insert_line(self, code, lnum):
         # sort code to insert
         code = self.g.sort_gcode(code)
         # renumber code to insert
         for x in code:
             x[2] = lnum
         # renumber file contents
-        for x in text:
+        for x in self._file_contents:
             if x[2] >= lnum:
                 x[2] += 1
         # insert code
-        for i, x in enumerate(text):
+        for i, x in enumerate(self._file_contents):
             if x[2] < lnum:
                 pass
             else:
-                text[i:i] = code
+                self._file_contents[i:i] = code
                 break
-        return text
 
     def insert_safety_line(self):
         # define the current safety line
@@ -123,8 +125,7 @@ class sw_2_linuxCNC_formatter():
                 if r[0][0][2] < 10:  # make sure the G97 is before any motor commands
                     safety_line = safety_line.replace(self._spindle_mode, '')
             # insert the appropriate safetly line on line 2
-            self._file_contents = self._insert_line(safety_line, 1,
-                                                    self._file_contents)
+            self._insert_line(safety_line, 1)
 
     def delete_B_commands(self):
         del_list = []
@@ -192,22 +193,24 @@ class sw_2_linuxCNC_formatter():
             del self._file_contents[d-i]
 
     def fix_spindle_cmds(self):
-
-        check_val = 0 # prevents infinite loops
+        # find the spindle commands
         for i, x in enumerate(self._file_contents):
-            if x[1] == 'code':
-                if x[0] == 'G96':
-                    x[0] = '(G96)'
-                    x[1] == 'comment'
-                    c = ['(Warning, G96 cmds not supported)', 'comment', 0]
-                    self._file_contents.insert(0, c)
-                if 'S' in x[0] and i != check_val:
-                    line = '(MSG please set rpm to {})'.format(x[0][1:])
-                    coms = [j[0] for j in self._file_contents if j[1] == 'comment' and j[2] < x[2]]
-                    if line not in coms:
-                        line += ' M0'
-                        self._insert_line(line, (x[2]), self._file_contents)
-                        check_val = i+2
+            if x[1] == 'code' and 'S' in x[0]:
+                # if found, insert a msg cmd string
+                spd = x[0][1:]
+                msg = f'(MSG, please set speed to {spd} RPM)'
+                lnum = x[2]
+                preline = [x[0] for x in self._file_contents if x[2] == lnum-1]
+                if msg not in preline:
+                    msg += 'M0'  # add in a forced pause
+                    self._insert_line(msg, x[2])
+
+    def insert_warnings(self):
+        msg = '(MSG, warning G96 cmds not supported)'
+        x = [x[0] for x in self._file_contents if x[1] == 'code']
+        y = [x[0] for x in self._file_contents if x[1] == 'comments']
+        if 'G96' in x and msg not in y:
+            self._insert_line('(MSG, warning G96 cmds not supported)', 0)
 
     def make_tool_tbl(self):
         tool_tbl = []

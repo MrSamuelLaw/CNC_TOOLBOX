@@ -16,5 +16,5 @@ def sync():
     for f in files:
         ui = f
         py = f[0:-3]+'.py'
-        cmd = (["pyside2-uic", ui, '-o', py, '-x'])
-        subprocess.run(cmd)
+        cmd = ["pyside2-uic", ui, '-o', py, '-x']
+        s = subprocess.run(cmd)
