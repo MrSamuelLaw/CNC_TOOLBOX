@@ -43,6 +43,7 @@ class sw_2_linuxCNC_formatter():
         self.fix_T_commands()
         self.fix_eof()
         self.renumber_lines()
+        self.insert_warnings()
         return self.get_text()
 
     def remove_line_numbers(self):
@@ -208,7 +209,7 @@ class sw_2_linuxCNC_formatter():
     def insert_warnings(self):
         msg = '(MSG, warning G96 cmds not supported)'
         x = [x[0] for x in self._file_contents if x[1] == 'code']
-        y = [x[0] for x in self._file_contents if x[1] == 'comments']
+        y = [x[0] for x in self._file_contents if x[1] == 'comment']
         if 'G96' in x and msg not in y:
             self._insert_line('(MSG, warning G96 cmds not supported)', 0)
 

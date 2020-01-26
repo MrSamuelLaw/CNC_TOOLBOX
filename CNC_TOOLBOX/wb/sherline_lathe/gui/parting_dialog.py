@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'C:\Users\Samuel\Documents\CodingProjects\Python\in_progress\CNC_TOOLBOX\wb\sherline_lathe\gui\parting_dialog.ui',
 # licensing of 'C:\Users\Samuel\Documents\CodingProjects\Python\in_progress\CNC_TOOLBOX\wb\sherline_lathe\gui\parting_dialog.ui' applies.
 #
-# Created: Sat Jan 25 19:00:10 2020
+# Created: Sat Jan 25 19:11:45 2020
 #      by: pyside2-uic  running on PySide2 5.13.0
 #
 # WARNING! All changes made in this file will be lost!

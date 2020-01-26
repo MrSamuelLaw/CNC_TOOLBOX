@@ -19,8 +19,8 @@ class test_sw_2_linuxCNC_formatter(unittest.TestCase):
         # print('----------First Run --------------')
         # print(first_run)
         second_run = my_l.format(first_run, 'IN', 'G54')
-        print('----------Second Run --------------')
-        print(second_run)
+        # print('----------Second Run --------------')
+        # print(second_run)
         # self.assertEqual(first_run, second_run)
 
     def test_set_units(self):
