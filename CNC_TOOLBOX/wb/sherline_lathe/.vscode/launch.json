@@ -9,7 +9,7 @@
             "name": "test",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/test/test_sw_2_linuxCNC_formatter.py",
+            "program": "${workspaceFolder}/test/run.py",
             "console": "integratedTerminal"
         }
     ]
