@@ -29,6 +29,7 @@ class my_sherline_lathe_wb(Ui_sherline_lathe_workbench):
         self.surfacing_pushButton.clicked.connect(self.surface_script)
         self.parting_pushButton.clicked.connect(self.parting_script)
         self.tool_table_pushButton.clicked.connect(self.generate_tool_table)
+        self.ft_to_in_pushButton.clicked.connect(self.fpm_to_ipm)
 
         # return instance to parent so that the
         # parent can keep it alive, otherwise it dies immediatly
@@ -113,6 +114,13 @@ class my_sherline_lathe_wb(Ui_sherline_lathe_workbench):
         #     print(path)
         #     with open(path, 'w') as f:
         #         f.write(crib)
+
+    def fpm_to_ipm(self):
+        text = self.text_area.toPlainText()
+        formatter = sw_2_linuxCNC_formatter()
+        text = formatter.fpm_to_ipm(text)
+        self.text_area.clearText()
+        self.text_area.appendPlainText(text.lstrip())
 
     def load_parent_elments(self, parent):
         self.text_area = parent.text_area

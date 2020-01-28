@@ -231,3 +231,13 @@ class sw_2_linuxCNC_formatter():
     def get_text(self):
         text = gscrape().to_text(self._file_contents)
         return text
+
+    def fpm_to_ipm(self, text):
+        self._file_contents = self.g.sort_gcode(text)
+        for x in self._file_contents:
+            if x[1] == 'code' and 'F' in x[0]:
+                feed = float(x[0][1:])  # convert to float
+                feed = 12 * feed  # convert fpm to ipm here
+                x[0] = 'F{0:.4f}'.format(feed)  # put back to
+        # return as text
+        return self.g.to_text(self._file_contents)

@@ -26,7 +26,7 @@ def linux_extra_sauce():
             'xsel'
     ]
     for d in linux_dependencies:
-        try:  # figure out how to run like in terminal
+        try:
             p = subprocess.run(["which", str(d)])
             if p.returncode:
                 try:
@@ -56,42 +56,27 @@ def create_venv():
 
 def main():
     if int(sys.version[0]) == 3:  # make sure python3 is being used
-        dependencies = [  # define depends
+        # put in dependencies
+        dependencies = [
         'setuptools',
-        'pyside2==5.13',
+        'PySide2==5.13.0',
         'pyperclip'
         ]
-        installed_packages = []
-        try:
-            packages = subprocess.run([sys.executable, '-m', 'pip', 'list'], stdout=subprocess.PIPE)
-            for p in list(packages.stdout.split()):
-                s = str(p)[1:].replace("'", "")
-                installed_packages.append(s)
-
-            # reqs = subprocess.check_output([sys.executable, '-m', 'pip', 'freeze'])
-            # installed_packages = [r.decode().split('==')[0] for r in reqs.split()]
-            for d in dependencies:
-                if d in installed_packages:
-                    print(d, 'dependency is met')
+        for d in dependencies:
+            try:  # if not met install it
+                p = subprocess.Popen([sys.executable, "-m", "pip", "install", str(d)], stdout=subprocess.PIPE)
+                output = p.communicate()[0].decode('ASCII')
+                if p.returncode:
+                    print(output)
                 else:
-                    try:  # if not met install it
-                        p = subprocess.run([sys.executable,
-                                            "-m"
-                                            "pip",
-                                            "install",
-                                            str(d)]
-                                           )
-                        if p.returncode == 0:
-                            pass
-                        else:
-                            print(str(a), ' may not have installed correctly')
-                    except Exception as e:
-                        print(e)
-        except Exception as e:
-            print(e)
+                    print(f'{d} requirement met')
+            except Exception as e:
+                print(e)
+
+        # perform linux magic
         if platform.system() == 'Linux':
             linux_extra_sauce()
-
+        # install gscrape
         install_packages()
     else:
         print('please run with python3 not python2')
