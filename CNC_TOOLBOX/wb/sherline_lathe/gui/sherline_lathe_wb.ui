@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>sherline_lathe_workbench</class>
+ <widget class="QFrame" name="sherline_lathe_workbench">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>851</width>
+    <height>119</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="windowTitle">
+   <string>Frame</string>
+  </property>
+  <property name="frameShape">
+   <enum>QFrame::Box</enum>
+  </property>
+  <property name="frameShadow">
+   <enum>QFrame::Sunken</enum>
+  </property>
+  <property name="lineWidth">
+   <number>1</number>
+  </property>
+  <layout class="QGridLayout" name="gridLayout_2">
+   <property name="leftMargin">
+    <number>20</number>
+   </property>
+   <item row="0" column="1" rowspan="2">
+    <widget class="QLabel" name="label_2">
+     <property name="text">
+      <string>units</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="2" rowspan="2">
+    <widget class="QWidget" name="widget" native="true">
+     <layout class="QGridLayout" name="gridLayout">
+      <item row="0" column="0">
+       <widget class="QRadioButton" name="in_radiobutton">
+        <property name="text">
+         <string>in</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QRadioButton" name="mm_radiobutton">
+        <property name="text">
+         <string>mm</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2">
+       <widget class="QCheckBox" name="number_checkbox">
+        <property name="text">
+         <string>numbered
+    lines</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="0" column="4" rowspan="2">
+    <widget class="QLineEdit" name="offset_field">
+     <property name="maximumSize">
+      <size>
+       <width>75</width>
+       <height>16777215</height>
+      </size>
+     </property>
+     <property name="text">
+      <string>G54</string>
+     </property>
+     <property name="placeholderText">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="7">
+    <widget class="QPushButton" name="parting_pushButton">
+     <property name="minimumSize">
+      <size>
+       <width>35</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="text">
+      <string>parting</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="11" rowspan="2">
+    <spacer name="horizontalSpacer">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>40</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="0" column="3" rowspan="2">
+    <widget class="QPushButton" name="format_button">
+     <property name="maximumSize">
+      <size>
+       <width>125</width>
+       <height>16777215</height>
+      </size>
+     </property>
+     <property name="text">
+      <string>format</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="5" rowspan="2">
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>offset
+(defaults to G54)</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="7">
+    <widget class="QPushButton" name="tool_table_pushButton">
+     <property name="minimumSize">
+      <size>
+       <width>110</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="text">
+      <string>make tool table</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="10">
+    <widget class="QPushButton" name="surfacing_pushButton">
+     <property name="minimumSize">
+      <size>
+       <width>35</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="text">
+      <string>surfacing</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="10">
+    <widget class="QPushButton" name="ft_to_in_pushButton">
+     <property name="minimumSize">
+      <size>
+       <width>110</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="text">
+      <string>ft/min -&gt; in/min</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="6" rowspan="2">
+    <widget class="Line" name="line">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
