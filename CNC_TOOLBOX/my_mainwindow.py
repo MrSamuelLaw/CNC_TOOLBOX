@@ -34,7 +34,8 @@ class my_mainwindow(Ui_MainWindow):
         self.device_comboBox.addItem('start menu')
         self.wb_list = os.listdir(os.getcwd()+'/wb')
         for wb in self.wb_list:
-            self.device_comboBox.addItem(wb)
+            if wb != 'info.txt':
+                self.device_comboBox.addItem(wb)
 
         # load in a file if passed as command line
         if len(sys.argv) > 2:

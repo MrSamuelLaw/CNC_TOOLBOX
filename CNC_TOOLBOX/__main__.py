@@ -5,7 +5,7 @@ import os
 import sys
 import subprocess
 import tools.sync_ui
-if True:
+if False:
     tools.sync_ui.sync()
 from my_mainwindow import *
 

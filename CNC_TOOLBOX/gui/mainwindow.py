@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'C:\Users\Samuel\Documents\CodingProjects\Python\in_progress\CNC_TOOLBOX\CNC_TOOLBOX\gui\mainwindow.ui',
 # licensing of 'C:\Users\Samuel\Documents\CodingProjects\Python\in_progress\CNC_TOOLBOX\CNC_TOOLBOX\gui\mainwindow.ui' applies.
 #
-# Created: Tue Jan 28 11:10:11 2020
+# Created: Wed Jan 29 10:09:29 2020
 #      by: pyside2-uic  running on PySide2 5.13.0
 #
 # WARNING! All changes made in this file will be lost!
