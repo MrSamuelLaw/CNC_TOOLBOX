@@ -1,8 +1,0 @@
-[submodule "CNC_TOOLBOX/wb/sherline_lathe"]
-	path = CNC_TOOLBOX/wb/sherline_lathe
-	url = https://github.com/MrSamuelLaw/sherline_lathe.git
-	branch = master
-[submodule "CNC_TOOLBOX/wb/shop_bot"]
-	path = CNC_TOOLBOX/wb/shop_bot
-	url = https://github.com/MrSamuelLaw/shop_bot.git
-	branch = master
