@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'C:\Users\Samuel\Documents\CodingProjects\Python\in_progress\CNC_TOOLBOX\CNC_TOOLBOX\gui\mainwindow.ui',
-# licensing of 'C:\Users\Samuel\Documents\CodingProjects\Python\in_progress\CNC_TOOLBOX\CNC_TOOLBOX\gui\mainwindow.ui' applies.
+# Form implementation generated from reading ui file 'c:\Users\Samuel\Documents\CodingProjects\Python\in_progress\CNC_TOOLBOX\CNC_TOOLBOX\gui\mainwindow.ui',
+# licensing of 'c:\Users\Samuel\Documents\CodingProjects\Python\in_progress\CNC_TOOLBOX\CNC_TOOLBOX\gui\mainwindow.ui' applies.
 #
-# Created: Wed Jan 29 10:09:29 2020
+# Created: Mon Feb  3 13:13:25 2020
 #      by: pyside2-uic  running on PySide2 5.13.0
 #
 # WARNING! All changes made in this file will be lost!
@@ -13,7 +13,7 @@ from PySide2 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(789, 671)
+        MainWindow.resize(785, 677)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.gridLayout_3 = QtWidgets.QGridLayout(self.centralwidget)
@@ -72,9 +72,10 @@ class Ui_MainWindow(object):
         self.gridLayout.addWidget(self.frame, 0, 0, 1, 1)
         self.scrollArea = QtWidgets.QScrollArea(self.splitter)
         self.scrollArea.setWidgetResizable(True)
+        self.scrollArea.setAlignment(QtCore.Qt.AlignBottom|QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft)
         self.scrollArea.setObjectName("scrollArea")
         self.scrollAreaWidgetContents = QtWidgets.QWidget()
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 765, 512))
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 761, 441))
         self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
         self.gridLayout_5 = QtWidgets.QGridLayout(self.scrollAreaWidgetContents)
         self.gridLayout_5.setObjectName("gridLayout_5")
@@ -93,12 +94,35 @@ class Ui_MainWindow(object):
         self.gridLayout_3.addWidget(self.splitter, 1, 0, 1, 7)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 789, 26))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 785, 26))
         self.menubar.setObjectName("menubar")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
+        self.fnd_dockWidget = QtWidgets.QDockWidget(MainWindow)
+        self.fnd_dockWidget.setFloating(False)
+        self.fnd_dockWidget.setFeatures(QtWidgets.QDockWidget.DockWidgetClosable)
+        self.fnd_dockWidget.setAllowedAreas(QtCore.Qt.BottomDockWidgetArea|QtCore.Qt.TopDockWidgetArea)
+        self.fnd_dockWidget.setObjectName("fnd_dockWidget")
+        self.dockWidgetContents_2 = QtWidgets.QWidget()
+        self.dockWidgetContents_2.setObjectName("dockWidgetContents_2")
+        self.gridLayout_4 = QtWidgets.QGridLayout(self.dockWidgetContents_2)
+        self.gridLayout_4.setObjectName("gridLayout_4")
+        self.find_pushButton = QtWidgets.QPushButton(self.dockWidgetContents_2)
+        self.find_pushButton.setObjectName("find_pushButton")
+        self.gridLayout_4.addWidget(self.find_pushButton, 0, 2, 1, 1)
+        self.find_lineEdit = QtWidgets.QLineEdit(self.dockWidgetContents_2)
+        self.find_lineEdit.setObjectName("find_lineEdit")
+        self.gridLayout_4.addWidget(self.find_lineEdit, 0, 0, 1, 1)
+        self.replace_lineEdit = QtWidgets.QLineEdit(self.dockWidgetContents_2)
+        self.replace_lineEdit.setObjectName("replace_lineEdit")
+        self.gridLayout_4.addWidget(self.replace_lineEdit, 0, 1, 1, 1)
+        self.replace_pushButton = QtWidgets.QPushButton(self.dockWidgetContents_2)
+        self.replace_pushButton.setObjectName("replace_pushButton")
+        self.gridLayout_4.addWidget(self.replace_pushButton, 0, 3, 1, 1)
+        self.fnd_dockWidget.setWidget(self.dockWidgetContents_2)
+        MainWindow.addDockWidget(QtCore.Qt.DockWidgetArea(8), self.fnd_dockWidget)
         self.actionopen = QtWidgets.QAction(MainWindow)
         self.actionopen.setObjectName("actionopen")
 
@@ -112,6 +136,10 @@ class Ui_MainWindow(object):
         self.save_button.setText(QtWidgets.QApplication.translate("MainWindow", "Save", None, -1))
         self.save_copy.setText(QtWidgets.QApplication.translate("MainWindow", "copy", None, -1))
         self.overwrite_radio.setText(QtWidgets.QApplication.translate("MainWindow", "overwrite", None, -1))
+        self.find_pushButton.setText(QtWidgets.QApplication.translate("MainWindow", "Find", None, -1))
+        self.find_lineEdit.setPlaceholderText(QtWidgets.QApplication.translate("MainWindow", "Find", None, -1))
+        self.replace_lineEdit.setPlaceholderText(QtWidgets.QApplication.translate("MainWindow", "Replace", None, -1))
+        self.replace_pushButton.setText(QtWidgets.QApplication.translate("MainWindow", "Replace", None, -1))
         self.actionopen.setText(QtWidgets.QApplication.translate("MainWindow", "open", None, -1))
 
 

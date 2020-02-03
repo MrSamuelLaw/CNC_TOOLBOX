@@ -17,4 +17,4 @@ def sync():
         ui = f
         py = f[0:-3]+'.py'
         cmd = ["pyside2-uic", ui, '-o', py, '-x']
-        s = subprocess.run(cmd)
+        p = subprocess.run(cmd, shell=True)  # shell prevents window popup
