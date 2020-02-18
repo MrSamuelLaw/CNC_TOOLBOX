@@ -1,0 +1,5 @@
+# exclude everything
+CNC_TOOLBOX/wb/*
+
+# exception to the rule
+!CNC_TOOLBOX/wb/info.txt

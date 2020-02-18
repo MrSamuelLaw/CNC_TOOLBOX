@@ -18,6 +18,7 @@ class my_mainwindow(Ui_MainWindow):
         # setup to default screen
         self.setupUi(mainwindow)
         self.frame.hide()
+        self.fnd_dockWidget.hide()
 
         # add functions
         self.menubar.addAction("open", self.launch_file_browser)
@@ -25,16 +26,23 @@ class my_mainwindow(Ui_MainWindow):
         self.menubar.addAction("save as", self.save_as)
         self.device_comboBox.currentIndexChanged.connect(self.load_workbench)
         self.save_button.clicked.connect(self.save_file)
+        self.find_pushButton.clicked.connect(self.find)
+        self.replace_pushButton.clicked.connect(self.replace)
 
         # add an additional function to the plainTextEdit
         #   that preserves the undo stack
         self.text_area.clearText = self.clearText
 
+        # insert key bindings
+        s1 = QtWidgets.QShortcut(QtGui.QKeySequence("Ctrl+f"), self.text_area)
+        s1.activated.connect(self.fnd_dockWidget.show)
+
         # load the wb combo box
         self.device_comboBox.addItem('start menu')
         self.wb_list = os.listdir(os.getcwd()+'/wb')
         for wb in self.wb_list:
-            self.device_comboBox.addItem(wb)
+            if wb != 'info.txt':
+                self.device_comboBox.addItem(wb)
 
         # load in a file if passed as command line
         if len(sys.argv) > 2:
@@ -130,7 +138,7 @@ class my_mainwindow(Ui_MainWindow):
             class_name = 'my_'+device+'_wb'
             mod_path = 'wb.'+device+'.'+class_name
             self.dynamic_import(mod_path, class_name)
-            wb = eval('self._module.'+class_name+'()')
+            wb = getattr(self._module, class_name)()
             self._wb = wb.run_integrated(self)  # self it parent
             # so that the child workbench can pull the elements
             # necessary for its opperation
@@ -189,3 +197,14 @@ class my_mainwindow(Ui_MainWindow):
         # delete all the content
         curs.deleteChar()
         curs.setPosition(0)
+
+    def find(self):
+        # have a proof of concept, need to add in a find next
+        text = self.find_lineEdit.text()  # string to find
+        self.text_area.setFocus()  # ensures the text gets highlighted
+        self.text_area.find(text)  # attempts to find the next instance
+
+    def replace(self):
+        new = self.replace_lineEdit.text()  # get new text
+        self.text_area.textCursor().removeSelectedText()  # remove old
+        self.text_area.textCursor().insertText(new)  # insert new
