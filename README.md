@@ -10,6 +10,7 @@
     the application running fast, even on lighter weight machines.
   - The workbench design pattern allows for a layer of abstraction allowing workbenches to be tested in isolation from the 
     rest of the program
+  - The links to official workbenches are located in CNC_TOOLBOX->wb-info.txt 
 
 # Branches
  Master - The current working version of the project. Just run setup.py using python3 and it will run correctly on Linux and  Windows
