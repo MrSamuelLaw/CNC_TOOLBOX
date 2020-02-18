@@ -138,7 +138,7 @@ class my_mainwindow(Ui_MainWindow):
             class_name = 'my_'+device+'_wb'
             mod_path = 'wb.'+device+'.'+class_name
             self.dynamic_import(mod_path, class_name)
-            wb = eval('self._module.'+class_name+'()')
+            wb = getattr(self._module, class_name)()
             self._wb = wb.run_integrated(self)  # self it parent
             # so that the child workbench can pull the elements
             # necessary for its opperation
