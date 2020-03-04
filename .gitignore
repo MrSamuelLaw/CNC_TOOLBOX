@@ -1,6 +1,6 @@
 # exclude everything
 CNC_TOOLBOX/wb/*
-**/__pycache__/*.pyc
+__pycache__
 
 # exception to the rule
 !CNC_TOOLBOX/wb/info.txt
