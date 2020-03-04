@@ -7,6 +7,7 @@ from collections import deque
 from platform import system
 import os
 import sys
+import logging
 
 
 class my_mainwindow(Ui_MainWindow):
@@ -15,6 +16,11 @@ class my_mainwindow(Ui_MainWindow):
     _module = None
 
     def __init__(self, mainwindow):
+        """
+        set up main window
+        """
+        logging.info('setting up mainwindow')
+
         # setup to default screen
         self.setupUi(mainwindow)
         self.frame.hide()
@@ -52,9 +58,15 @@ class my_mainwindow(Ui_MainWindow):
                 except Exception as e:
                     print(e)
 
+        logging.info('finished setting up mainwindow')
+
     def load_file(self):
+        """
+        open a file and puts its contents in the text area
+        """
         self._file = sys.argv[2]
         self.file_field.setText(str(path.basename(self._file)))
+        logging.info(f'loading file {str(path.basename(self._file))}')
         with open(self._file, 'r') as f:
             self.text_area.clear()
             self.text_area.insertPlainText(f.read())
@@ -64,6 +76,7 @@ class my_mainwindow(Ui_MainWindow):
         launches a an instance of the os's native file browser
         to load a file into the text area
         '''
+        logging.info('opening file browser')
         browser = QFileDialog()
         # browser.setNameFilter("nc files (*.nc)")  # filter if needed
         if browser.exec_():
@@ -75,12 +88,20 @@ class my_mainwindow(Ui_MainWindow):
                 self.text_area.insertPlainText(f.read())
 
     def close(self):
+        """
+        close current file and wipe its contenst from the screen
+        """
         self._file = None
         self.file_field.clear()
         self.text_area.clear()
         self.file_field.setText('no file selected')
+        logging.info('file closed')
 
     def save_as(self):
+        """
+        save the current contents to a new file
+        """
+        logging.info('saving file as')
         browser = QFileDialog()
         # patch to allow the save as to work on linux
         if system() == 'Linux':
@@ -95,8 +116,12 @@ class my_mainwindow(Ui_MainWindow):
             self.file_field.setText(str(path.basename(self._file)))
             with open(self._file, 'w') as f:
                 f.write(self.text_area.toPlainText())
+        logging.info('file saved')
 
     def save_file(self):
+        """
+        save current file
+        """
         if self._file is not None:
             file = self._file
             if self.save_copy.isChecked():
@@ -111,12 +136,13 @@ class my_mainwindow(Ui_MainWindow):
 
         else:
             self.save_as()
+        logging.info('file saved')
 
     def load_workbench(self):
         '''
-        supports dyanamic importing of workbenches
-        from the workbench folder
+        dynamically import a workbench from the wb folder.
         '''
+        logging.info('loading workbench')
         if self.device_comboBox.currentIndex() == 0:
             # reset frame if no device selected
             if self.frame.layout() is not None:
@@ -128,6 +154,7 @@ class my_mainwindow(Ui_MainWindow):
                 # the start menu
                 self.frame.layout().deleteLater()
                 self.frame.hide()
+                self._wb = None
         else:
             if self.frame.layout() is not None:
                 self.del_all_in_layout(self.frame.layout())
@@ -144,12 +171,21 @@ class my_mainwindow(Ui_MainWindow):
             # necessary for its opperation
             self.frame = self._wb.frame
             self.frame.show()
+            logging.info('workbench loaded')
 
     def dynamic_import(self, mod_path, class_name):
+        """
+        dynamically import a specified module
+        """
         # this is the code that makes the module import magic happen
+        logging.debug('importing workbench module')
         self._module = __import__(mod_path, fromlist=[class_name])
 
     def del_all_in_layout(self, layout):
+        """
+        remove contents of a workbench from memory
+        """
+        logging.debug('deleting ui content from workbench')
         # this code removes everything from a layout
         # prior to deletion to prevent memory leaks
         if layout is not None:
@@ -162,6 +198,11 @@ class my_mainwindow(Ui_MainWindow):
                     self.del_all_in_layout(layout)
 
     def replace_frame(self):
+        """
+        provide new frame for wb to fill if old one has not
+        been deleted from memory
+        """
+        logging.debug('replacing frame')
         # capture the parent
         p = self.frame.parent()
 
@@ -188,8 +229,10 @@ class my_mainwindow(Ui_MainWindow):
         self.gridLayout.addWidget(self.frame, r, c, rs, cs)
 
     def clearText(self):
-        '''clears text while preserving the plainTextEdit's undo stack
-        '''
+        """
+        clear text while preserving the plainTextEdit's undo stack
+        """
+        logging.info('clearing text')
         # create a instance of a Q cursor with text doc as parent
         curs = QtGui.QTextCursor(self.text_area.document())
         # select all the content
@@ -199,12 +242,17 @@ class my_mainwindow(Ui_MainWindow):
         curs.setPosition(0)
 
     def find(self):
-        # have a proof of concept, need to add in a find next
+        """
+        find function for text area
+        """
         text = self.find_lineEdit.text()  # string to find
         self.text_area.setFocus()  # ensures the text gets highlighted
         self.text_area.find(text)  # attempts to find the next instance
 
     def replace(self):
+        """
+        replace function for text area
+        """
         new = self.replace_lineEdit.text()  # get new text
         self.text_area.textCursor().removeSelectedText()  # remove old
         self.text_area.textCursor().insertText(new)  # insert new
