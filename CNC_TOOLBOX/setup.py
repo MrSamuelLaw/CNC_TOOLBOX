@@ -21,6 +21,9 @@ import shutil
 
 
 def linux_extra_sauce():
+    """
+    adds the linux distros necessary for copy and paste functionality
+    """
     linux_dependencies = [
             'xclip',
             'xsel'
@@ -38,6 +41,9 @@ def linux_extra_sauce():
 
 
 def install_packages():
+    """
+    install gscrape.py as global. It's the heart of CNC toolbox
+    """
     if site.ENABLE_USER_SITE:
         dst = site.USER_SITE
         cwd = os.path.dirname(os.path.realpath(sys.argv[0]))
@@ -49,12 +55,19 @@ def install_packages():
 
 
 def create_venv():
+    """
+    create a virtual enviroment for all the dependecies to be
+    installed on
+    """
     pass
     # flesh out plan to create local venv and have
     # the program use it by default
 
 
 def main():
+    """
+    setup global enviroment for cnc_toolbox to run properly
+    """
     if int(sys.version[0]) == 3:  # make sure python3 is being used
         # put in dependencies
         dependencies = [
@@ -85,4 +98,3 @@ def main():
 if __name__ == "__main__":
     main()
     input("Press <enter> to exit")
-

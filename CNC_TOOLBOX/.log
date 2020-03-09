@@ -1,0 +1,5 @@
+INFO:func __init__:Line 24:my_sherline_lathe_wb instantiated
+INFO:func __init__:Line 25:lathe parting
+INFO:func part:Line 31:generating parting script
+INFO:func part:Line 64:finished generating parting script
+INFO:func __del__:Line 27:my_sherline_lathe_wb deleted
