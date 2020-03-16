@@ -40,15 +40,13 @@ def main():
     with open('.log', 'w') as f:
         f.write('')
         logger.debug('log cleared')
-
+    # handle cmd line arguments
     if len(sys.argv) > 1:
         # if called from cnc_toolbox.py/exe externally
         # - argv[0] where the script was started from
         # - argv[1] exe directory
         # - argv[2] file to open's directory
         os.chdir(sys.argv[1])
-
-
 
 
 if __name__ == "__main__":

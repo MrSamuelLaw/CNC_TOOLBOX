@@ -42,12 +42,13 @@ def linux_extra_sauce():
 
 def install_packages():
     """
-    install gscrape.py as global. It's the heart of CNC toolbox
+    install gscrape.py as global. It's the heart of CNC toolbox that allows
+    text to be turned into organized lists.
     """
     if site.ENABLE_USER_SITE:
         dst = site.USER_SITE
         cwd = os.path.dirname(os.path.realpath(sys.argv[0]))
-        src = os.path.join(cwd,'packages/gscrape.py')
+        src = os.path.join(cwd, 'packages/gscrape.py')
         try:
             shutil.copy(src, dst)
         except Exception as e:

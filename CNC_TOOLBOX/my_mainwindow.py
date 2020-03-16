@@ -243,7 +243,7 @@ class my_mainwindow(Ui_MainWindow):
 
     def find(self):
         """
-        find function for text area
+        find function for text area find & replace
         """
         text = self.find_lineEdit.text()  # string to find
         self.text_area.setFocus()  # ensures the text gets highlighted
@@ -251,7 +251,7 @@ class my_mainwindow(Ui_MainWindow):
 
     def replace(self):
         """
-        replace function for text area
+        replace function for text area find & replace
         """
         new = self.replace_lineEdit.text()  # get new text
         self.text_area.textCursor().removeSelectedText()  # remove old
