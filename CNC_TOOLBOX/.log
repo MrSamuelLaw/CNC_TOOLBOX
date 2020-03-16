@@ -1,2 +1,11 @@
-INFO:func __init__:Line 24:my_sherline_lathe_wb instantiated
-INFO:func __del__:Line 27:my_sherline_lathe_wb deleted
+INFO:func __init__:Line 24:setting up mainwindow
+INFO:func load_workbench:Line 153:loading workbench
+INFO:func __init__:Line 63:finished setting up mainwindow
+INFO:func load_workbench:Line 153:loading workbench
+INFO:func __init__:Line 28:my_sherline_lathe_wb instantiated
+INFO:func run_integrated:Line 42:getting sherline lathe wb ready for parent
+INFO:func load_workbench:Line 182:workbench loaded
+INFO:func __init__:Line 25:lathe parting
+INFO:func part:Line 31:generating parting script
+INFO:func part:Line 64:finished generating parting script
+INFO:func __del__:Line 35:my_sherline_lathe_wb deleted

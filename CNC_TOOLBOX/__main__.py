@@ -20,6 +20,7 @@ def main():
     handle = 'log'
     logger = logging.getLogger(handle)
     logger.setLevel(level=logging.DEBUG)
+
     # define message format
     file_format = logging.Formatter('%(levelname)s:'
                                     'func %(funcName)s:'
@@ -27,6 +28,7 @@ def main():
                                     '%(message)s')
     console_format = logging.Formatter('%(levelname)s:'
                                        '%(message)s')
+
     # make seperate file and console output filters
     fh = logging.FileHandler('.log')
     fh.setLevel(level=logging.INFO)
@@ -36,10 +38,12 @@ def main():
     ch.setFormatter(console_format)
     logger.addHandler(fh)
     logger.addHandler(ch)
+
     # clear the log file
     with open('.log', 'w') as f:
         f.write('')
         logger.debug('log cleared')
+
     # handle cmd line arguments
     if len(sys.argv) > 1:
         # if called from cnc_toolbox.py/exe externally
