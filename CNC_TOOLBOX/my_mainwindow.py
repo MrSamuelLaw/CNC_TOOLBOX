@@ -1,18 +1,19 @@
 #!/usr/bin/env python
 
-from gui.mainwindow import *
-from PySide2.QtWidgets import QFileDialog
-from os import path
-from collections import deque
-from platform import system
+import logging
 import os
 import sys
-import logging
+from collections import deque
+from os import path
+from platform import system
+
+from PySide2.QtWidgets import QFileDialog
+
+from gui.mainwindow import *
 
 
 class my_mainwindow(Ui_MainWindow):
 
-    _file = None
     _module = None
 
     def __init__(self, mainwindow):
@@ -22,28 +23,30 @@ class my_mainwindow(Ui_MainWindow):
 
         self._logger = logging.getLogger('log')
         self._logger.info('setting up mainwindow')
+        self.d_count = 0
 
         # setup to default screen
         self.setupUi(mainwindow)
         self.frame.hide()
         self.fnd_dockWidget.hide()
 
+        # set up the tabbed widget
+        self.new_tab()
+        self.text_area = self.tabWidget.currentWidget().text_area
+        self.tabWidget.tabCloseRequested.connect(self.close_tab)
+
         # add functions
-        self.menubar.addAction("open", self.launch_file_browser)
-        self.menubar.addAction("close", self.close)
-        self.menubar.addAction("save as", self.save_as)
+        self.filemenu = self.menubar.addMenu("file")
+        self.filemenu.addAction("new", self.new_tab)
+        self.filemenu.addAction("open", self.open_file)
+        self.filemenu.addAction("close", self.close)
+        self.filemenu.addAction("save", self.save_file)
+        self.filemenu.addAction("save as", self.save_as)
+        self.tabWidget.currentChanged.connect(self.set_tab)
         self.device_comboBox.currentIndexChanged.connect(self.load_workbench)
-        self.save_button.clicked.connect(self.save_file)
+
         self.find_pushButton.clicked.connect(self.find)
         self.replace_pushButton.clicked.connect(self.replace)
-
-        # add an additional function to the plainTextEdit
-        #   that preserves the undo stack
-        self.text_area.clearText = self.clearText
-
-        # insert key bindings
-        s1 = QtWidgets.QShortcut(QtGui.QKeySequence("Ctrl+f"), self.text_area)
-        s1.activated.connect(self.fnd_dockWidget.show)
 
         # load the wb combo box
         self.device_comboBox.addItem('start menu')
@@ -62,19 +65,33 @@ class my_mainwindow(Ui_MainWindow):
 
         self._logger.info('finished setting up mainwindow')
 
+#---------------------------------------------------------------------------------------
+#   ______   _   _               _    _                       _   _   _
+#  |  ____| (_) | |             | |  | |                     | | | | (_)
+#  | |__     _  | |   ___       | |__| |   __ _   _ __     __| | | |  _   _ __     __ _
+#  |  __|   | | | |  / _ \      |  __  |  / _` | | '_ \   / _` | | | | | | '_ \   / _` |
+#  | |      | | | | |  __/      | |  | | | (_| | | | | | | (_| | | | | | | | | | | (_| |
+#  |_|      |_| |_|  \___|      |_|  |_|  \__,_| |_| |_|  \__,_| |_| |_| |_| |_|  \__, |
+#                                                                                  __/ |
+#                                                                                 |___/
+#---------------------------------------------------------------------------------------
+
     def load_file(self):
         """
         open a file and puts its contents in the text area
         """
 
-        self._file = sys.argv[2]
-        self.file_field.setText(str(path.basename(self._file)))
-        self._logger.info(f'loading file {str(path.basename(self._file))}')
-        with open(self._file, 'r') as f:
-            self.text_area.clear()
+        self.tabWidget.currentWidget()._file = sys.argv[2]  # get path to file
+        tf = self.tabWidget.currentWidget()._file
+        self._logger.info(f'loading file {str(path.basename(tf))}')
+        # set tab title
+        self.tabWidget.setTabText(self.tabWidget.currentIndex(),
+                                  str(path.basename(tf)))
+        # put contents on the screen
+        with open(tf, 'r') as f:
             self.text_area.insertPlainText(f.read())
 
-    def launch_file_browser(self):
+    def open_file(self):
         '''
         launches a an instance of the os's native file browser
         to load a file into the text area
@@ -85,9 +102,27 @@ class my_mainwindow(Ui_MainWindow):
         # browser.setNameFilter("nc files (*.nc)")  # filter if needed
         if browser.exec_():
             files = browser.selectedFiles()
-            self._file = files[0]
-            self.file_field.setText(str(path.basename(self._file)))
-            with open(self._file, 'r') as f:
+            tf = files[0]
+
+            # if no tabs exist
+            if self.tabWidget.currentIndex() < 0:
+                self.new_tab()
+                t_index = self.tabWidget.currentIndex()
+            # if tab exists and has no content in the text area
+            elif not len(self.tabWidget.currentWidget().text_area.toPlainText()):
+                self.text_area = self.tabWidget.currentWidget().text_area
+                t_index = self.tabWidget.currentIndex()
+            # if tab exists and has content in it
+            else:
+                self.new_tab()
+                t_index = self.tabWidget.currentIndex() + 1
+                self.tabWidget.setCurrentIndex(t_index)
+                self.text_area = self.tabWidget.widget(t_index).text_area
+
+            # update title
+            self.tabWidget.widget(t_index)._file = tf
+            self.tabWidget.setTabText(t_index, str(path.basename(tf)))
+            with open(tf, 'r') as f:
                 self.text_area.clear()
                 self.text_area.insertPlainText(f.read())
 
@@ -96,10 +131,7 @@ class my_mainwindow(Ui_MainWindow):
         close current file and wipe its contenst from the screen
         """
 
-        self._file = None
-        self.file_field.clear()
         self.text_area.clear()
-        self.file_field.setText('no file selected')
         self._logger.info('file closed')
 
     def save_as(self):
@@ -118,19 +150,21 @@ class my_mainwindow(Ui_MainWindow):
             browser.setOptions(options)
         if browser.exec_():
             files = browser.selectedFiles()
-            self._file = files[0]
-            self.file_field.setText(str(path.basename(self._file)))
-            with open(self._file, 'w') as f:
+            tf = files[0]
+            self.tabWidget.currentWidget()._file = tf
+            with open(tf, 'w') as f:
                 f.write(self.text_area.toPlainText())
-        self._logger.info('file saved')
+            self.tabWidget.setTabText(self.tabWidget.currentIndex(),
+                                      str(path.basename(tf)))
+        self._logger.info(f'{tf} saved')
 
     def save_file(self):
         """
         save current file
         """
-
-        if self._file is not None:
-            file = self._file
+        tf = self.tabWidget.currentWidget()._file
+        if tf is not None:
+            file = tf
             if self.save_copy.isChecked():
                 folder = path.dirname(file)
                 file_name = 'fixed_'+path.basename(file)
@@ -143,14 +177,83 @@ class my_mainwindow(Ui_MainWindow):
 
         else:
             self.save_as()
-        self._logger.info('file saved')
+        self._logger.info(f'{tf} saved')
+
+#---------------------------------------------------------------------------------------------------------
+#   _______           _           __  __                                                              _
+#  |__   __|         | |         |  \/  |                                                            | |
+#     | |      __ _  | |__       | \  / |   __ _   _ __     __ _    __ _   _ __ ___     ___   _ __   | |_
+#     | |     / _` | | '_ \      | |\/| |  / _` | | '_ \   / _` |  / _` | | '_ ` _ \   / _ \ | '_ \  | __|
+#     | |    | (_| | | |_) |     | |  | | | (_| | | | | | | (_| | | (_| | | | | | | | |  __/ | | | | | |_
+#     |_|     \__,_| |_.__/      |_|  |_|  \__,_| |_| |_|  \__,_|  \__, | |_| |_| |_|  \___| |_| |_|  \__|
+#                                                                   __/ |
+#                                                                  |___/
+#---------------------------------------------------------------------------------------------------------
+
+    def set_tab(self):
+        try:
+            self.text_area = self.tabWidget.currentWidget().text_area
+        except Exception as e:
+            self._logger.warning(str(e))
+
+    def new_tab(self):
+        self._logger.info('creating new tab')
+        new_tab = QtWidgets.QTabWidget(self.tabWidget)
+
+        new_tab.grid_layout = QtWidgets.QGridLayout(new_tab)
+        new_tab.grid_layout.setContentsMargins(0, 0, 0, 0)
+        new_tab.grid_layout.setObjectName("grid_layout")
+
+        new_tab.text_area = QtWidgets.QPlainTextEdit(new_tab)
+
+        # add an additional function to the plainTextEdit
+        #   that preserves the undo stack
+        new_tab.text_area.clearText = self.clearText
+
+        # tabs keep track of the files they have open
+        new_tab._file = None
+
+        # insert key bindings
+        s1 = QtWidgets.QShortcut(QtGui.QKeySequence("Ctrl+f"), new_tab.text_area)
+        s1.activated.connect(self.fnd_dockWidget.show)
+        s2 = QtWidgets.QShortcut(QtGui.QKeySequence("Ctrl+s"), new_tab.text_area)
+        s2.activated.connect(self.save_file)
+
+        # add to layout
+        new_tab.grid_layout.addWidget(new_tab.text_area, 0, 0, 1, 1)
+        self.tabWidget.addTab(new_tab, f'untitled {self.doc_count()}')
+
+    def close_tab(self):
+        self._logger.info('closing tab')
+        try:
+            current_tab = self.tabWidget.currentWidget()
+            self.del_all_in_layout(current_tab.grid_layout)
+            current_tab.deleteLater()
+        except Exception as e:
+            logging.warning(str(e))
+
+#----------------------------------------------------------------------------
+#  __          __                 _      _                             _
+#  \ \        / /                | |    | |                           | |
+#   \ \  /\  / /    ___    _ __  | | __ | |__     ___   _ __     ___  | |__
+#    \ \/  \/ /    / _ \  | '__| | |/ / | '_ \   / _ \ | '_ \   / __| | '_ \
+#     \  /\  /    | (_) | | |    |   <  | |_) | |  __/ | | | | | (__  | | | |
+#   __ \/_ \/      \___/  |_|    |_|\_\ |_.__/   \___| |_| |_|  \___| |_| |_|
+#   __  __                                                              _
+#  |  \/  |                                                            | |
+#  | \  / |   __ _   _ __     __ _    __ _   _ __ ___     ___   _ __   | |_
+#  | |\/| |  / _` | | '_ \   / _` |  / _` | | '_ ` _ \   / _ \ | '_ \  | __|
+#  | |  | | | (_| | | | | | | (_| | | (_| | | | | | | | |  __/ | | | | | |_
+#  |_|  |_|  \__,_| |_| |_|  \__,_|  \__, | |_| |_| |_|  \___| |_| |_|  \__|
+#                                     __/ |
+#                                    |___/
+#----------------------------------------------------------------------------
 
     def load_workbench(self):
         '''
         dynamically import a workbench from the wb folder.
         '''
 
-        self._logger.info('loading workbench')
         if self.device_comboBox.currentIndex() == 0:
             # reset frame if no device selected
             if self.frame.layout() is not None:
@@ -164,6 +267,7 @@ class my_mainwindow(Ui_MainWindow):
                 self.frame.hide()
                 self._wb = None
         else:
+            self._logger.info('loading workbench')
             if self.frame.layout() is not None:
                 self.del_all_in_layout(self.frame.layout())
                 self.replace_frame()
@@ -195,7 +299,7 @@ class my_mainwindow(Ui_MainWindow):
         remove contents of a workbench from memory
         """
 
-        self._logger.debug('deleting ui content from workbench')
+        self._logger.debug('deleting ui content from layout')
         # this code removes everything from a layout
         # prior to deletion to prevent memory leaks
         if layout is not None:
@@ -239,6 +343,15 @@ class my_mainwindow(Ui_MainWindow):
         # add it back into the layout
         self.gridLayout.addWidget(self.frame, r, c, rs, cs)
 
+#-----------------------------------------------------------------------
+#                       __  __   _
+#                      |  \/  | (_)
+#                      | \  / |  _   ___    ___
+#                      | |\/| | | | / __|  / __|
+#                      | |  | | | | \__ \ | (__
+#                      |_|  |_| |_| |___/  \___|
+#-----------------------------------------------------------------------
+
     def clearText(self):
         """
         clear text while preserving the plainTextEdit's undo stack
@@ -272,3 +385,7 @@ class my_mainwindow(Ui_MainWindow):
         self._logger.debug(f'replacement text is {new}')
         self.text_area.textCursor().removeSelectedText()  # remove old
         self.text_area.textCursor().insertText(new)  # insert new
+
+    def doc_count(self):
+        self.d_count += 1
+        return self.d_count

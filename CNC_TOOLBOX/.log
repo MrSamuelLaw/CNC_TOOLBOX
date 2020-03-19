@@ -1,11 +1,11 @@
-INFO:func __init__:Line 24:setting up mainwindow
-INFO:func load_workbench:Line 153:loading workbench
-INFO:func __init__:Line 63:finished setting up mainwindow
-INFO:func load_workbench:Line 153:loading workbench
-INFO:func __init__:Line 28:my_sherline_lathe_wb instantiated
-INFO:func run_integrated:Line 42:getting sherline lathe wb ready for parent
-INFO:func load_workbench:Line 182:workbench loaded
-INFO:func __init__:Line 25:lathe parting
-INFO:func part:Line 31:generating parting script
-INFO:func part:Line 64:finished generating parting script
-INFO:func __del__:Line 35:my_sherline_lathe_wb deleted
+INFO:func __init__:Line 25:setting up mainwindow
+INFO:func new_tab:Line 200:creating new tab
+INFO:func __init__:Line 66:finished setting up mainwindow
+INFO:func open_file:Line 100:opening file browser
+INFO:func save_file:Line 180:C:/Users/Samuel/Desktop/LatheTesting/pin/test file 3.txt saved
+INFO:func close_tab:Line 227:closing tab
+WARNING:func set_tab:Line 197:'NoneType' object has no attribute 'text_area'
+INFO:func new_tab:Line 200:creating new tab
+INFO:func save_as:Line 159:C:/Users/Samuel/Desktop/LatheTesting/pin/test file 3.txt saved
+INFO:func save_file:Line 180:None saved
+INFO:func save_file:Line 180:C:/Users/Samuel/Desktop/LatheTesting/pin/test file 3.txt saved
