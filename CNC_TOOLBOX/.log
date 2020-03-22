@@ -1,11 +1,32 @@
-INFO:func __init__:Line 25:setting up mainwindow
-INFO:func new_tab:Line 200:creating new tab
-INFO:func __init__:Line 66:finished setting up mainwindow
-INFO:func open_file:Line 100:opening file browser
-INFO:func save_file:Line 180:C:/Users/Samuel/Desktop/LatheTesting/pin/test file 3.txt saved
-INFO:func close_tab:Line 227:closing tab
-WARNING:func set_tab:Line 197:'NoneType' object has no attribute 'text_area'
-INFO:func new_tab:Line 200:creating new tab
-INFO:func save_as:Line 159:C:/Users/Samuel/Desktop/LatheTesting/pin/test file 3.txt saved
-INFO:func save_file:Line 180:None saved
-INFO:func save_file:Line 180:C:/Users/Samuel/Desktop/LatheTesting/pin/test file 3.txt saved
+INFO:func __init__:Line 71:setting up mainwindow
+INFO:func new_tab:Line 263:creating new tab
+INFO:func __init__:Line 125:finished setting up mainwindow
+INFO:func browse:Line 151:opening file browser
+INFO:func new_tab:Line 263:creating new tab
+INFO:func close_tab:Line 292:closing tab
+INFO:func close:Line 193:file closed
+INFO:func load_workbench:Line 334:loading workbench
+INFO:func __init__:Line 28:my_sherline_lathe_wb instantiated
+INFO:func run_integrated:Line 42:getting sherline lathe wb ready for parent
+INFO:func load_workbench:Line 350:workbench loaded
+INFO:func close_tab:Line 292:closing tab
+INFO:func close:Line 193:file closed
+WARNING:func set_tab:Line 260:'NoneType' object has no attribute 'text_area'
+INFO:func browse:Line 151:opening file browser
+INFO:func new_tab:Line 263:creating new tab
+INFO:func format_file:Line 66:formatting gcode to run on linuxCNC
+INFO:func insert_safety_line:Line 153:inserting safety line
+INFO:func insert_warnings:Line 308:inserting appropriate warnings
+INFO:func clearText:Line 424:clearing text
+INFO:func browse:Line 151:opening file browser
+INFO:func new_tab:Line 263:creating new tab
+INFO:func format_file:Line 66:formatting gcode to run on linuxCNC
+INFO:func insert_safety_line:Line 153:inserting safety line
+INFO:func insert_warnings:Line 308:inserting appropriate warnings
+INFO:func clearText:Line 424:clearing text
+INFO:func format_file:Line 66:formatting gcode to run on linuxCNC
+INFO:func insert_safety_line:Line 153:inserting safety line
+INFO:func insert_warnings:Line 308:inserting appropriate warnings
+INFO:func clearText:Line 424:clearing text
+INFO:func save_overwrite:Line 206:saving file
+INFO:func save_overwrite:Line 206:saving file

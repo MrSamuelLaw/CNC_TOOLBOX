@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'C:\Users\Samuel\Documents\CodingProjects\Python\in_progress\CNC_TOOLBOX\CNC_TOOLBOX\gui\mainwindow.ui',
-# licensing of 'C:\Users\Samuel\Documents\CodingProjects\Python\in_progress\CNC_TOOLBOX\CNC_TOOLBOX\gui\mainwindow.ui' applies.
+# Form implementation generated from reading ui file 'c:\Users\Samuel\Documents\CodingProjects\Python\in_progress\CNC_TOOLBOX\CNC_TOOLBOX\gui\mainwindow.ui',
+# licensing of 'c:\Users\Samuel\Documents\CodingProjects\Python\in_progress\CNC_TOOLBOX\CNC_TOOLBOX\gui\mainwindow.ui' applies.
 #
-# Created: Thu Mar 19 13:10:16 2020
+# Created: Sun Mar 22 12:09:36 2020
 #      by: pyside2-uic  running on PySide2 5.13.0
 #
 # WARNING! All changes made in this file will be lost!
@@ -18,21 +18,10 @@ class Ui_MainWindow(object):
         self.centralwidget.setObjectName("centralwidget")
         self.gridLayout_3 = QtWidgets.QGridLayout(self.centralwidget)
         self.gridLayout_3.setObjectName("gridLayout_3")
-        self.widget = QtWidgets.QWidget(self.centralwidget)
-        self.widget.setObjectName("widget")
-        self.gridLayout_2 = QtWidgets.QGridLayout(self.widget)
-        self.gridLayout_2.setContentsMargins(0, 0, 0, 0)
-        self.gridLayout_2.setObjectName("gridLayout_2")
-        self.save_copy = QtWidgets.QRadioButton(self.widget)
-        self.save_copy.setCheckable(True)
-        self.save_copy.setChecked(True)
-        self.save_copy.setAutoExclusive(True)
-        self.save_copy.setObjectName("save_copy")
-        self.gridLayout_2.addWidget(self.save_copy, 0, 1, 1, 1)
-        self.overwrite_radio = QtWidgets.QRadioButton(self.widget)
-        self.overwrite_radio.setObjectName("overwrite_radio")
-        self.gridLayout_2.addWidget(self.overwrite_radio, 0, 0, 1, 1)
-        self.gridLayout_3.addWidget(self.widget, 0, 2, 1, 1)
+        self.device_comboBox = QtWidgets.QComboBox(self.centralwidget)
+        self.device_comboBox.setMinimumSize(QtCore.QSize(150, 0))
+        self.device_comboBox.setObjectName("device_comboBox")
+        self.gridLayout_3.addWidget(self.device_comboBox, 0, 1, 1, 1)
         self.splitter = QtWidgets.QSplitter(self.centralwidget)
         self.splitter.setOrientation(QtCore.Qt.Vertical)
         self.splitter.setObjectName("splitter")
@@ -71,15 +60,28 @@ class Ui_MainWindow(object):
         self.tabWidget.setObjectName("tabWidget")
         self.gridLayout_5.addWidget(self.tabWidget, 0, 0, 1, 1)
         self.scrollArea.setWidget(self.scrollAreaWidgetContents)
-        self.gridLayout_3.addWidget(self.splitter, 1, 0, 1, 4)
-        self.device_comboBox = QtWidgets.QComboBox(self.centralwidget)
-        self.device_comboBox.setMinimumSize(QtCore.QSize(150, 0))
-        self.device_comboBox.setObjectName("device_comboBox")
-        self.gridLayout_3.addWidget(self.device_comboBox, 0, 1, 1, 1)
+        self.gridLayout_3.addWidget(self.splitter, 1, 0, 1, 5)
+        self.widget = QtWidgets.QWidget(self.centralwidget)
+        self.widget.setObjectName("widget")
+        self.gridLayout_2 = QtWidgets.QGridLayout(self.widget)
+        self.gridLayout_2.setContentsMargins(0, 0, 0, 0)
+        self.gridLayout_2.setObjectName("gridLayout_2")
+        self.copy_radio = QtWidgets.QRadioButton(self.widget)
+        self.copy_radio.setCheckable(True)
+        self.copy_radio.setChecked(True)
+        self.copy_radio.setAutoExclusive(True)
+        self.copy_radio.setObjectName("copy_radio")
+        self.gridLayout_2.addWidget(self.copy_radio, 0, 1, 1, 1)
+        self.overwrite_radio = QtWidgets.QRadioButton(self.widget)
+        self.overwrite_radio.setObjectName("overwrite_radio")
+        self.gridLayout_2.addWidget(self.overwrite_radio, 0, 0, 1, 1)
+        self.gridLayout_3.addWidget(self.widget, 0, 3, 1, 1)
         self.device_label = QtWidgets.QLabel(self.centralwidget)
         self.device_label.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
         self.device_label.setObjectName("device_label")
         self.gridLayout_3.addWidget(self.device_label, 0, 0, 1, 1)
+        spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.gridLayout_3.addItem(spacerItem, 0, 4, 1, 1)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 803, 26))
@@ -121,7 +123,7 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QtWidgets.QApplication.translate("MainWindow", "MainWindow", None, -1))
-        self.save_copy.setText(QtWidgets.QApplication.translate("MainWindow", "copy", None, -1))
+        self.copy_radio.setText(QtWidgets.QApplication.translate("MainWindow", "copy", None, -1))
         self.overwrite_radio.setText(QtWidgets.QApplication.translate("MainWindow", "overwrite", None, -1))
         self.device_label.setText(QtWidgets.QApplication.translate("MainWindow", "device", None, -1))
         self.replace_lineEdit.setPlaceholderText(QtWidgets.QApplication.translate("MainWindow", "Replace", None, -1))

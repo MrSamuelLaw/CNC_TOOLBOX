@@ -5,8 +5,14 @@ import os
 import sys
 import subprocess
 import logging
+
+# if singleton, go ahead and exit
+from tendo import singleton
+me = singleton.SingleInstance()
+
+# sync ui prior to import
 import tools.sync_ui
-if True:  # sync changes made using qt form designer
+if True:
     tools.sync_ui.sync()
 from my_mainwindow import *
 
@@ -15,6 +21,25 @@ def main():
     """
     setup logging and get cmdline arguments
     """
+
+    # handle cmd line arguments
+    if len(sys.argv) > 1:
+        # if called from cnc_toolbox.py/exe externally
+        # - argv[0] where the script was started from
+        # - argv[1] exe directory
+        # - argv[2] file to open's directory
+        os.chdir(sys.argv[1])
+
+# -----------------------------------------------------------------------
+#    _____          _       _
+#   / ____|        | |     | |
+#  | (___     ___  | |_    | |        ___     __ _    __ _    ___   _ __
+#   \___ \   / _ \ | __|   | |       / _ \   / _` |  / _` |  / _ \ | '__|
+#   ____) | |  __/ | |_    | |____  | (_) | | (_| | | (_| | |  __/ | |
+#  |_____/   \___|  \__|   |______|  \___/   \__, |  \__, |  \___| |_|
+#                                             __/ |   __/ |
+#                                            |___/   |___/
+# ------------------------------------------------------------------------
 
     # set logger handle
     handle = 'log'
@@ -44,14 +69,6 @@ def main():
         f.write('')
         logger.debug('log cleared')
 
-    # handle cmd line arguments
-    if len(sys.argv) > 1:
-        # if called from cnc_toolbox.py/exe externally
-        # - argv[0] where the script was started from
-        # - argv[1] exe directory
-        # - argv[2] file to open's directory
-        os.chdir(sys.argv[1])
-
 
 if __name__ == "__main__":
     main()  # call to collect cmd line arguments
@@ -64,4 +81,10 @@ if __name__ == "__main__":
     icon = QtGui.QIcon("icon/logo.png")
     MainWindow.setWindowIcon(icon)
     MainWindow.show()
-    sys.exit(app.exec_())
+    return_code = app.exec_()
+    # clean up the pipe
+    with open('.pipe', 'w') as p:
+        p.write('')
+    sys.exit(return_code)
+
+

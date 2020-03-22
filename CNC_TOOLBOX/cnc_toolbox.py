@@ -2,10 +2,12 @@
 
 
 import pathlib
+import psutil
 import os
 import platform
 import subprocess
 import logging
+from tendo import singleton
 from sys import argv
 
 
@@ -14,23 +16,31 @@ def main():
     launch an instance of CNC_TOOLBOX
     """
 
+    # set up logger
     logger = logging.getLogger('log')
-    cmd = list()
+    logging.basicConfig(level=logging.DEBUG)
+
     # set cmd list based on operating system
+    cmd = list()
     if platform.system() == 'Windows':
         logger.debug('platform is windows')
         cmd.append('pythonw')  # pythonw suppresses terminal
     elif platform.system() == 'Linux':
         logger.debug('platform is linux')
         cmd.append('python3')
+
     # account for where program is called from
     folder = str(os.path.dirname(os.path.realpath(argv[0])))
     cmd.append(os.path.join(folder, '__main__.py'))
     cmd.append(folder)
-    # if called with file to open as cmdline argument then open the file
+
+    # send cmdline arguments to pipe
     if len(argv) > 1:
-        cmd.append(argv[1])
-    # run the cmd with everything set correctly
+        pipe = os.path.join(folder, '.pipe')
+        with open(pipe, 'a') as p:
+            p.write(str(argv[1])+'\n')
+
+    # run the cmd
     subprocess.run(cmd)
 
 

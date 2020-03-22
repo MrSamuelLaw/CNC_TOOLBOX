@@ -3,26 +3,85 @@
 import logging
 import os
 import sys
-from collections import deque
+import threading
+import asyncio
 from os import path
+from time import sleep
 from platform import system
-
 from PySide2.QtWidgets import QFileDialog
-
 from gui.mainwindow import *
+
+
+#-------------------------------------------------------
+#   _        _         _
+#  | |      (_)       | |
+#  | |       _   ___  | |_    ___   _ __     ___   _ __
+#  | |      | | / __| | __|  / _ \ | '_ \   / _ \ | '__|
+#  | |____  | | \__ \ | |_  |  __/ | | | | |  __/ | |
+#  |______| |_| |___/  \__|  \___| |_| |_|  \___| |_|
+#-------------------------------------------------------
+
+
+class ListenerSignals(QtCore.QObject):
+    heard = QtCore.Signal(str)
+
+
+class Listener(QtCore.QObject):
+
+    def __init__(self):
+        self._logger = logging.getLogger('log')
+        self.signals = ListenerSignals()
+
+    def get_line(self, pipe):
+        return pipe.readline().strip()
+
+    def run(self):
+        with open('.pipe', 'r') as pipe:
+            while True:
+                line = pipe.readline().strip()
+                if len(line):
+                    self.signals.heard.emit(line)
+                sleep(0.7)
+
+
+#-----------------------------------------------------------------------------------
+#                       _                      _               _
+#                      (_)                    (_)             | |
+#   _ __ ___     __ _   _   _ __   __      __  _   _ __     __| |   ___   __      __
+#  | '_ ` _ \   / _` | | | | '_ \  \ \ /\ / / | | | '_ \   / _` |  / _ \  \ \ /\ / /
+#  | | | | | | | (_| | | | | | | |  \ V  V /  | | | | | | | (_| | | (_) |  \ V  V /
+#  |_| |_| |_|  \__,_| |_| |_| |_|   \_/\_/   |_| |_| |_|  \__,_|  \___/    \_/\_/
+#------------------------------------------------------------------------------------
 
 
 class my_mainwindow(Ui_MainWindow):
 
     _module = None
 
+    def test_func(self, stuff):
+        print(stuff)
+
     def __init__(self, mainwindow):
         """
         set up main window
         """
 
+        # set up logger
         self._logger = logging.getLogger('log')
         self._logger.info('setting up mainwindow')
+
+        # # clear the pipe
+        # with open('.pipe', 'w') as pipe:
+        #     pipe.write('')
+
+        # # set up a subthread
+        self.listener = Listener()
+        self.listener.signals.heard.connect(self.open)
+        self.thread = threading.Thread(target=self.listener.run)
+        self.thread.daemon = True
+        self.thread.start()
+
+        # start document count at zero
         self.d_count = 0
 
         # setup to default screen
@@ -33,14 +92,14 @@ class my_mainwindow(Ui_MainWindow):
         # set up the tabbed widget
         self.new_tab()
         self.text_area = self.tabWidget.currentWidget().text_area
-        self.tabWidget.tabCloseRequested.connect(self.close_tab)
+        self.tabWidget.tabCloseRequested.connect(self.close)
 
         # add functions
         self.filemenu = self.menubar.addMenu("file")
-        self.filemenu.addAction("new", self.new_tab)
-        self.filemenu.addAction("open", self.open_file)
+        self.filemenu.addAction("new", self.new)
+        self.filemenu.addAction("open", self.browse)
         self.filemenu.addAction("close", self.close)
-        self.filemenu.addAction("save", self.save_file)
+        self.filemenu.addAction("save", self.save)
         self.filemenu.addAction("save as", self.save_as)
         self.tabWidget.currentChanged.connect(self.set_tab)
         self.device_comboBox.currentIndexChanged.connect(self.load_workbench)
@@ -76,70 +135,95 @@ class my_mainwindow(Ui_MainWindow):
 #                                                                                 |___/
 #---------------------------------------------------------------------------------------
 
-    def load_file(self):
+    def new(self):
         """
-        open a file and puts its contents in the text area
+        opens a new tab without contents
         """
 
-        self.tabWidget.currentWidget()._file = sys.argv[2]  # get path to file
-        tf = self.tabWidget.currentWidget()._file
-        self._logger.info(f'loading file {str(path.basename(tf))}')
-        # set tab title
-        self.tabWidget.setTabText(self.tabWidget.currentIndex(),
-                                  str(path.basename(tf)))
-        # put contents on the screen
-        with open(tf, 'r') as f:
-            self.text_area.insertPlainText(f.read())
+        self._logger.info('opening a new tab')
+        self.open()
 
-    def open_file(self):
-        '''
-        launches a an instance of the os's native file browser
-        to load a file into the text area
-        '''
+    def browse(self):
+        """
+        use file browser to select file
+        """
 
         self._logger.info('opening file browser')
         browser = QFileDialog()
-        # browser.setNameFilter("nc files (*.nc)")  # filter if needed
         if browser.exec_():
             files = browser.selectedFiles()
             tf = files[0]
+            self.open(filepath=tf)
 
-            # if no tabs exist
-            if self.tabWidget.currentIndex() < 0:
-                self.new_tab()
-                t_index = self.tabWidget.currentIndex()
-            # if tab exists and has no content in the text area
-            elif not len(self.tabWidget.currentWidget().text_area.toPlainText()):
-                self.text_area = self.tabWidget.currentWidget().text_area
-                t_index = self.tabWidget.currentIndex()
-            # if tab exists and has content in it
-            else:
-                self.new_tab()
-                t_index = self.tabWidget.currentIndex() + 1
-                self.tabWidget.setCurrentIndex(t_index)
-                self.text_area = self.tabWidget.widget(t_index).text_area
-
-            # update title
-            self.tabWidget.widget(t_index)._file = tf
-            self.tabWidget.setTabText(t_index, str(path.basename(tf)))
-            with open(tf, 'r') as f:
-                self.text_area.clear()
-                self.text_area.insertPlainText(f.read())
-
-    def close(self):
+    def open(self, filepath=None):
         """
-        close current file and wipe its contenst from the screen
+        open a new tab and load contents
         """
 
-        self.text_area.clear()
-        self._logger.info('file closed')
+        tab = self.new_tab()
+        if filepath is not None:
+            # set the tab filepath
+            tab._file = filepath
+            # put the contents on a new tab
+            with open(filepath, 'r') as c:
+                contents = c.read()
+                tab.text_area.insertPlainText(str(contents))
+            # set the tab title
+            index = self.tabWidget.indexOf(tab)
+            title = os.path.basename(filepath)
+            self.tabWidget.setTabText(index, title)
+        else:
+            # open a blank tab
+            self.tabWidget.setCurrentWidget(tab)
+        # set view to new tab
+        self.tabWidget.setCurrentWidget(tab)
+
+    def close(self, index=None):
+        """
+        close current file and wipe its contents from the screen
+        """
+
+        if index is None:  # close tab with focus
+            tab = self.tabWidget.currentWidget()
+            self.close_tab(tab)
+            self._logger.info('file closed')
+        else: # signal came from tabCloseRequested
+            tab = self.tabWidget.widget(index)
+            self.close_tab(tab)
+            self._logger.info('file closed')
+
+    def save(self):
+        """
+        save a file using the appropriate method
+        """
+
+        if self.copy_radio.isChecked():
+            self.save_copy()
+        elif self.overwrite_radio.isChecked():
+            self.save_overwrite()
+
+    def save_overwrite(self):
+        self._logger.info('saving file')
+        tab = self.tabWidget.currentWidget()
+        contents = tab.text_area.toPlainText()
+        with open(tab._file, 'w') as f:
+            f.write(contents)
+
+    def save_copy(self):
+        self._logger.info('saving file copy')
+        tab = self.tabWidget.currentWidget()
+        contents = tab.text_area.toPlainText()
+        file_name = 'copy_'+os.path.basename(tab._file)
+        dirpath = os.path.dirname(tab._file)
+        with open(os.path.join(dirpath, file_name), 'w') as f:
+            f.write(contents)
 
     def save_as(self):
         """
         save the current contents to a new file
         """
 
-        logging.info('saving file as')
+        self._logger.info('saving file as')
         browser = QFileDialog()
         # patch to allow the save as to work on linux
         if system() == 'Linux':
@@ -156,27 +240,6 @@ class my_mainwindow(Ui_MainWindow):
                 f.write(self.text_area.toPlainText())
             self.tabWidget.setTabText(self.tabWidget.currentIndex(),
                                       str(path.basename(tf)))
-        self._logger.info(f'{tf} saved')
-
-    def save_file(self):
-        """
-        save current file
-        """
-        tf = self.tabWidget.currentWidget()._file
-        if tf is not None:
-            file = tf
-            if self.save_copy.isChecked():
-                folder = path.dirname(file)
-                file_name = 'fixed_'+path.basename(file)
-                file = folder+'/'+file_name
-                with open(file, 'w+') as f:
-                    f.write(self.text_area.toPlainText())
-            else:
-                with open(file, 'w+') as f:
-                    f.write(self.text_area.toPlainText())
-
-        else:
-            self.save_as()
         self._logger.info(f'{tf} saved')
 
 #---------------------------------------------------------------------------------------------------------
@@ -217,18 +280,19 @@ class my_mainwindow(Ui_MainWindow):
         s1 = QtWidgets.QShortcut(QtGui.QKeySequence("Ctrl+f"), new_tab.text_area)
         s1.activated.connect(self.fnd_dockWidget.show)
         s2 = QtWidgets.QShortcut(QtGui.QKeySequence("Ctrl+s"), new_tab.text_area)
-        s2.activated.connect(self.save_file)
+        s2.activated.connect(self.save)
 
         # add to layout
         new_tab.grid_layout.addWidget(new_tab.text_area, 0, 0, 1, 1)
         self.tabWidget.addTab(new_tab, f'untitled {self.doc_count()}')
 
-    def close_tab(self):
+        return new_tab
+
+    def close_tab(self, tab):
         self._logger.info('closing tab')
         try:
-            current_tab = self.tabWidget.currentWidget()
-            self.del_all_in_layout(current_tab.grid_layout)
-            current_tab.deleteLater()
+            self.del_all_in_layout(tab.grid_layout)
+            tab.deleteLater()
         except Exception as e:
             logging.warning(str(e))
 
