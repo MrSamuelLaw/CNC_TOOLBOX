@@ -1,13 +1,10 @@
 #!/usr/bin/env python
 
 
-import pathlib
-import psutil
 import os
 import platform
 import subprocess
 import logging
-from tendo import singleton
 from sys import argv
 
 
@@ -38,7 +35,9 @@ def main():
     if len(argv) > 1:
         pipe = os.path.join(folder, '.pipe')
         with open(pipe, 'a') as p:
-            p.write(str(argv[1])+'\n')
+            for arg in argv[1:]:
+                if os.path.isfile(arg):
+                    p.write(str(arg)+'\n')
 
     # run the cmd
     subprocess.run(cmd)

@@ -171,8 +171,10 @@ class my_mainwindow(Ui_MainWindow):
             # set the tab title
             index = self.tabWidget.indexOf(tab)
             title = os.path.basename(filepath)
+            self._logger.info(f'opening {title}')
             self.tabWidget.setTabText(index, title)
         else:
+            self._logger.info('opening blank tab')
             # open a blank tab
             self.tabWidget.setCurrentWidget(tab)
         # set view to new tab
@@ -196,8 +198,9 @@ class my_mainwindow(Ui_MainWindow):
         """
         save a file using the appropriate method
         """
-
-        if self.copy_radio.isChecked():
+        if self.tabWidget.currentWidget()._file is None:
+            self.save_as()
+        elif self.copy_radio.isChecked():
             self.save_copy()
         elif self.overwrite_radio.isChecked():
             self.save_overwrite()
