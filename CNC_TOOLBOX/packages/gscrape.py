@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 
-'''a gcode scraper that performs common functions
-for gcode editing purposes. gscrape is desiged to
-enable more effecient writing of macros for machine
-programmers who wish to automate code formatting'''
-
 
 class gscrape():
+    '''a gcode scraper that performs common functions
+    for gcode editing purposes. gscrape is desiged to
+    enable more effecient writing of macros for machine
+    programmers who wish to automate code formatting'''
 
     def __init__(self):
         self._comment_flags = dict()
+        self._math_operators = ['-', '+', '.']
 
     def add_comment_flag(self, name, vals, status=True):
         '''sets the comment structure for the gcode
@@ -20,7 +20,7 @@ class gscrape():
         arg3 <bool> status, true by default
 
         value = -1 if opening brace like "(" or 1 if closing like ")"
-        value = 0 if text right is comment as in ";comment"
+        value = -2 if text right is comment as in ";comment"
         '''
 
         vals.append(status)
@@ -29,137 +29,111 @@ class gscrape():
     def get_comment_flags(self):
         return self._comment_flags
 
-    def _get_char_family(self, char):
-        '''loops through and finds the family
-        the comment char belongs to
-        assigns none if the value char belongs
-        to a non_enclosed family
-        '''
+    def _is_comment_flag(self, item):
         for key in self._comment_flags.keys():
-            if self._comment_flags[key][-1]:  # prevents inactive keys
-                for item in self._comment_flags[key][:-1]:
-                    if 0 in item:
-                        return None
-                    elif char in item:
-                        return key
-
-    def _find_char(self, text, chars):
-        '''finds characters in a given string
-        '''
-        if text is not None:
-            for c in chars:
-                if text.find(c) >= 0:
+            for subitem in self._comment_flags[key][:-1]:
+                if item in subitem:
                     return True
         return False
 
-    def _dict_from_char_tups(self):
-        chars = dict()
+    def _get_flag_count(self, flag):
         for item in self._comment_flags.values():
-            if item[-1]:
-                vals = {i[0]: i[1] for i in item[:-1]}
-                chars.update(vals)
-        return chars
+            for subitem in item[:-1]:
+                if flag in subitem:
+                    return subitem[-1]
+        return False
+
+    def _sequence(self, gcode):
+        gcode.sort(key=lambda x: x[2])
+        # make sure lines are sequentially numbered
+        gcode[0][2] = 0  # ensure it starts at zero
+        for i, x in enumerate(gcode[1:]):
+            if x[2] != gcode[i][2]:
+                x[2] = (gcode[i][2] + 1)
+        return gcode
 
     def sort_gcode(self, text):
-        bools = [i[-1] for i in self._comment_flags.values()]
-        if True not in list(bools):
-            print('no comment flags active')
-        else:
-            # set up a list chars that indicate comments and families
-            char_dict = self._dict_from_char_tups()
-            fam_count = {key: 0 for key in self._comment_flags.keys()}
-            sorted_script = list()
+        gcode = []
+        buff, last = '', ''
+        for lnum, line in enumerate(text.splitlines()):
+            if not line.strip():
+                gcode.append(['', 'blank', lnum])
+            line_iter = iter(line)
+            try:
+                while line_iter:
+                    item = next(line_iter)
 
-            # sort text line by line
-            for num, line in enumerate(text.splitlines()):
-                if len(line) == 0:
-                    sorted_script.append(['\n', 'blank', num])
-                code = ''
-                capture = 0
-                filter_flag = 0
-                # sort line char by char
-                for i, char in enumerate(line):
-                    if char in char_dict.keys():
-                        fam = self._get_char_family(char)
-                        if fam is None:
-                            # single char comment catcher
-                            comment = line[i:]
-                            comment = comment.strip()
-                            if len(comment):
-                                sorted_script.append([comment, 'comment', num])
-                            capture = 2
-                            # bracketed comment catcher
-                        elif fam is not None:
-                            fam_count[fam] += 1
-                            if filter_flag == 0:  # entering a comment block
-                                index = i
-                                capture = -1
-                                code = code.strip()
-                                if len(code):
-                                    sorted_script.append([code, 'code', num])
-                                code = ''
-                            filter_flag += char_dict[char]  # index the count
-                            if filter_flag == 0:  # exiting a comment block
-                                comment = line[index:i+1]
-                                comment = comment.strip()
-                                if len(comment):
-                                    sorted_script.append([comment, 'comment', num])
-                                capture = 1
-                    # append char to code string based on condition
-                    if capture == 0:  # not in a comment
-                        code += char
-                    elif capture == 1:  # just came out of a comment
-                        capture = 0
-                    elif capture == 2:  # unbracketed comment
-                        break
+                    # NUMBER BRANCH
+                    if item.isnumeric() or item in self._math_operators:
+                        buff += item
+                    # ALPHA BRANCH
+                    elif item.isalpha():
+                        if last.isalpha():
+                            raise DoubleLetter('two sequentail characters found not in code')
+                        elif len(buff):
+                            gcode.append([buff, 'code', lnum])
+                            buff = item
+                        else:
+                            buff += item
+                    # COMMENT BRANCH
+                    elif self._is_comment_flag(item):
+                        if buff:
+                            gcode.append([buff, 'code', lnum])
+                        buff = item
 
-                # capture code if end of line encountered
-                if capture == 0:
-                    code = code.strip()
-                    if len(code):
-                        sorted_script.append([code, 'code', num])
+                        flag_count = self._get_flag_count(item)  # index flag count
+                        while flag_count:  # start while loop
+                            try:
+                                item = next(line_iter)
+                                if self._is_comment_flag(item):
+                                    flag_count += self._get_flag_count(item)
+                                buff += item
+                            except StopIteration as e:
+                                flag_count = 0
+                                gcode.append([buff, 'comment', lnum])
+                                buff = ''
+                        gcode.append([buff, 'comment', lnum])
+                        buff = ''
 
-                # break on unmatched brackets
-                for v in fam_count.values():
-                    if v % 2 != 0:
-                        msg = 'unmatched brackets line: '
-                        return msg+str(num)
+            # iteration exception handling
+            except StopIteration as s:
+                if buff:
+                    gcode.append([buff, 'code', lnum])
+                    buff = ''
 
-            # break every gcode command into it's own cell
-            temp = []
-            for item in sorted_script:
-                if item[1] == 'code':
-                    ilist = []
-                    # find where the splits should be
-                    for i, char in enumerate(item[0]):
-                        if char.isalpha():
-                            ilist.append(i)
-                    ilist.append(len(item[0]))
-                    # execute the splits
-                    index = ilist[0]
-                    for i in ilist[1:]:
-                        temp.append([item[0][index:i].strip(), item[1], item[2]])
-                        index = i
-                elif item[1] == 'comment':
-                    temp.append(item)
-                elif item[1] == 'blank':
-                    temp.append(item)
-            sorted_script = temp
-        return sorted_script
+        return gcode
 
-    def to_text(self, sorted_code):
-        # initialize variables
-        line_dict = {}
-        text = ''
-        for x in sorted_code:
-            if x[2] not in line_dict.keys():
-                line_dict[x[2]] = [x]
+    def to_text(self, gcode):
+        # make sure it's in order
+        gcode.sort(key=lambda x: x[2])
+        # group by matches
+        line, text = [], ''
+        for i, x in enumerate(gcode[1:]):
+            if x[2] == gcode[i][2]:
+                line.append(gcode[i][0])
             else:
-                line_dict[x[2]].append(x)
-        for k in sorted(line_dict.keys()):
-            line = [x[0] for x in line_dict[k]]
-            if line[0] == '\n':
-                text += ' '.join(line)
-            else:
-                text += '\n'+' '.join(line)
+                line.append(gcode[i][0])
+                text += ' '.join(line) + '\n'
+                line = []
+
         return text
+
+    def insert_line(self, gcode, text, lnum):
+        # parse text
+        text = self.sort_gcode(text)
+        gcode = self._sequence(gcode)
+        # find index
+        index = 0
+        for i, x in enumerate(gcode):
+            if x[2] == lnum:
+                index = i
+                break
+        # shift everything at that index up
+        for x in gcode[index:]:
+            x[2] += 1
+        # insert at index
+        for x in text[::-1]:
+            x[2] = lnum
+            gcode.insert(index, x)
+        # return gcode
+        return gcode

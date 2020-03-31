@@ -1,4 +1,14 @@
-INFO:func __init__:Line 71:setting up mainwindow
-INFO:func new_tab:Line 266:creating new tab
-INFO:func __init__:Line 125:finished setting up mainwindow
-INFO:func browse:Line 151:opening file browser
+INFO:func __init__:Line 68:setting up mainwindow
+INFO:func new_tab:Line 308:creating new tab
+INFO:func open:Line 216:opening blank tab
+INFO:func __init__:Line 133:finished setting up mainwindow
+INFO:func load_workbench:Line 402:loading workbench
+INFO:func __init__:Line 28:my_sherline_lathe_wb instantiated
+INFO:func run_integrated:Line 42:getting sherline lathe wb ready for parent
+INFO:func load_workbench:Line 420:workbench loaded
+INFO:func load_workbench:Line 402:loading workbench
+INFO:func load_workbench:Line 402:loading workbench
+INFO:func __init__:Line 28:my_sherline_lathe_wb instantiated
+INFO:func run_integrated:Line 42:getting sherline lathe wb ready for parent
+INFO:func __del__:Line 35:my_sherline_lathe_wb deleted
+INFO:func load_workbench:Line 420:workbench loaded

@@ -58,9 +58,6 @@ class my_mainwindow(Ui_MainWindow):
 
     _module = None
 
-    def test_func(self, stuff):
-        print(stuff)
-
     def __init__(self, mainwindow):
         """
         set up main window
@@ -70,11 +67,7 @@ class my_mainwindow(Ui_MainWindow):
         self._logger = logging.getLogger('log')
         self._logger.info('setting up mainwindow')
 
-        # # clear the pipe
-        # with open('.pipe', 'w') as pipe:
-        #     pipe.write('')
-
-        # # set up a subthread
+        # # set up listener
         self.listener = Listener()
         self.listener.signals.heard.connect(self.open)
         self.thread = threading.Thread(target=self.listener.run)
@@ -89,8 +82,24 @@ class my_mainwindow(Ui_MainWindow):
         self.frame.hide()
         self.fnd_dockWidget.hide()
 
-        # set up the tabbed widget
-        self.new_tab()
+        # toolbar test
+        self.tbar = QtWidgets.QToolBar('toolbar', mainwindow)
+        mainwindow.addToolBar(self.tbar)
+
+        # define drag and drops for tabWidget
+        self.tabWidget.setAcceptDrops(True)
+        self.tabWidget.dragEnterEvent = self.dragEnterEvent
+        self.tabWidget.dropEvent = self.dropEvent
+
+        # define right click actions for tabWidget
+        self.tabWidget.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
+        self.tabWidget.tabBarClicked.connect(self.tab_clicked)
+        a1 = QtWidgets.QAction('show in sidepanel', self.tabWidget)
+        a1.triggered.connect(self.open_in_popout)
+        self.tabWidget.addAction(a1)
+
+        # open newtab in tabWidget
+        self.open()
         self.text_area = self.tabWidget.currentWidget().text_area
         self.tabWidget.tabCloseRequested.connect(self.close)
 
@@ -103,7 +112,6 @@ class my_mainwindow(Ui_MainWindow):
         self.filemenu.addAction("save as", self.save_as)
         self.tabWidget.currentChanged.connect(self.set_tab)
         self.device_comboBox.currentIndexChanged.connect(self.load_workbench)
-
         self.find_pushButton.clicked.connect(self.find)
         self.replace_pushButton.clicked.connect(self.replace)
 
@@ -123,6 +131,37 @@ class my_mainwindow(Ui_MainWindow):
                     print(e)
 
         self._logger.info('finished setting up mainwindow')
+
+#--------------------------------------------------------------------------
+#   _____                                    _____
+#  |  __ \                           ___    |  __ \
+#  | |  | |  _ __    __ _    __ _   ( _ )   | |  | |  _ __    ___    _ __
+#  | |  | | | '__|  / _` |  / _` |  / _ \/\ | |  | | | '__|  / _ \  | '_ \
+#  | |__| | | |    | (_| | | (_| | | (_>  < | |__| | | |    | (_) | | |_) |
+#  |_____/  |_|     \__,_|  \__, |  \___/\/ |_____/  |_|     \___/  | .__/
+#                            __/ |                                  | |
+#                           |___/                                   |_|
+#---------------------------------------------------------------------------
+
+    def dragEnterEvent(self, e):
+        """
+        filters drag events
+        """
+        # check if item being dragged in has a path or not
+        self._logger.debug('dragEnterEvent detected')
+        if e.mimeData().hasUrls():
+            e.accept()  # if has path, allow drops
+
+    def dropEvent(self, e):
+        """
+        filters drop events
+        """
+        # if okayed by the dragEnterEvent
+        self._logger.debug('dropEvent detected')
+        for url in e.mimeData().urls():
+            p = str(url.toLocalFile())
+            if os.path.isfile(p):
+                self.open(p)
 
 #---------------------------------------------------------------------------------------
 #   ______   _   _               _    _                       _   _   _
@@ -256,6 +295,9 @@ class my_mainwindow(Ui_MainWindow):
 #                                                                  |___/
 #---------------------------------------------------------------------------------------------------------
 
+    def tab_clicked(self, index):
+        self._clicked_tab = index
+
     def set_tab(self):
         try:
             self.text_area = self.tabWidget.currentWidget().text_area
@@ -271,6 +313,8 @@ class my_mainwindow(Ui_MainWindow):
         new_tab.grid_layout.setObjectName("grid_layout")
 
         new_tab.text_area = QtWidgets.QPlainTextEdit(new_tab)
+        new_tab.text_area.setAcceptDrops(False)
+        # new_tab.text_area = textEdit(new_tab, self.open)
 
         # add an additional function to the plainTextEdit
         #   that preserves the undo stack
@@ -298,6 +342,27 @@ class my_mainwindow(Ui_MainWindow):
             tab.deleteLater()
         except Exception as e:
             logging.warning(str(e))
+
+    def open_in_popout(self):
+        self._logger.debug('opening to the side')
+
+        # create side panel and text area
+        self.sidepanel = QtWidgets.QDockWidget()
+        text_area = QtWidgets.QPlainTextEdit(self.sidepanel)
+
+        # get document for text area
+        document = self.tabWidget.widget(self._clicked_tab).text_area.document()
+        text_area.setDocument(document)
+        text_area.setReadOnly(True)
+
+        # set title for the dockable window
+        self.sidepanel.setWindowTitle(self.tabWidget.tabText(self._clicked_tab))
+
+
+        # send text_area to dockableWidget
+        self.sidepanel.setWidget(text_area)
+        self.sidepanel.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+        self.sidepanel.show()
 
 #----------------------------------------------------------------------------
 #  __          __                 _      _                             _
@@ -349,6 +414,8 @@ class my_mainwindow(Ui_MainWindow):
             # so that the child workbench can pull the elements
             # necessary for its opperation
             self.frame = self._wb.frame
+            # TEST LINE
+            self.tbar.addWidget(self.frame)
             self.frame.show()
             self._logger.info('workbench loaded')
 

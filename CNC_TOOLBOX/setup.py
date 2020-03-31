@@ -61,9 +61,8 @@ def create_venv():
     create a virtual enviroment for all the dependecies to be
     installed on
     """
-    pass
-    # flesh out plan to create local venv and have
-    # the program use it by default
+
+
 
 
 def main():
@@ -75,7 +74,8 @@ def main():
         dependencies = [
         'setuptools',
         'PySide2==5.13.0',
-        'pyperclip'
+        'pyperclip',
+        'tendo'
         ]
         for d in dependencies:
             try:  # if not met install it
@@ -84,7 +84,7 @@ def main():
                 if p.returncode:
                     print(output)
                 else:
-                    print(f'{d} requirement met')
+                    print(output)
             except Exception as e:
                 print(e)
 
