@@ -57,6 +57,7 @@ class Listener(QtCore.QObject):
 class my_mainwindow(Ui_MainWindow):
 
     _module = None
+    toolbar_padding = 5
 
     def __init__(self, mainwindow):
         """
@@ -79,31 +80,30 @@ class my_mainwindow(Ui_MainWindow):
 
         # setup to default screen
         self.setupUi(mainwindow)
-        self.frame.hide()
         self.fnd_dockWidget.hide()
+        # create status bar widget
+        status_widget = QtWidgets.QWidget(mainwindow)
+        layout = QtWidgets.QHBoxLayout(mainwindow)
+        spacer = QtWidgets.QSpacerItem(2000, 0, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        layout.addSpacerItem(spacer)
+        self.stat_label = QtWidgets.QLabel('', mainwindow)
+        layout.addWidget(self.stat_label)
+        status_widget.setLayout(layout)
+        # add status bar widget to the mainwindow
+        mainwindow.statusBar().addWidget(status_widget)
 
-        # toolbar test
-        self.tbar = QtWidgets.QToolBar('toolbar', mainwindow)
-        mainwindow.addToolBar(self.tbar)
 
-        # define drag and drops for tabWidget
-        self.tabWidget.setAcceptDrops(True)
-        self.tabWidget.dragEnterEvent = self.dragEnterEvent
-        self.tabWidget.dropEvent = self.dropEvent
+        # set up toolbars
+        self.toolBar.addWidget(self.toolbar_widget)
+        self.toolBar.setMinimumHeight(self.toolbar_widget.height() + self.toolbar_padding)
+        self.wb_toolbar = QtWidgets.QToolBar('wb_toolbar')
+        self.wb_widget = None
 
-        # define right click actions for tabWidget
-        self.tabWidget.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
-        self.tabWidget.tabBarClicked.connect(self.tab_clicked)
-        a1 = QtWidgets.QAction('show in sidepanel', self.tabWidget)
-        a1.triggered.connect(self.open_in_popout)
-        self.tabWidget.addAction(a1)
-
-        # open newtab in tabWidget
-        self.open()
+        # open a blank document on startup
+        self.new_tab()
         self.text_area = self.tabWidget.currentWidget().text_area
-        self.tabWidget.tabCloseRequested.connect(self.close)
 
-        # add functions
+        # link buttons and functions
         self.filemenu = self.menubar.addMenu("file")
         self.filemenu.addAction("new", self.new)
         self.filemenu.addAction("open", self.browse)
@@ -114,6 +114,10 @@ class my_mainwindow(Ui_MainWindow):
         self.device_comboBox.currentIndexChanged.connect(self.load_workbench)
         self.find_pushButton.clicked.connect(self.find)
         self.replace_pushButton.clicked.connect(self.replace)
+        self.tabWidget.tabCloseRequested.connect(self.close)
+        self.tabWidget.setAcceptDrops(True)
+        self.tabWidget.dragEnterEvent = self.dragEnterEvent
+        self.tabWidget.dropEvent = self.dropEvent
 
         # load the wb combo box
         self.device_comboBox.addItem('start menu')
@@ -122,46 +126,8 @@ class my_mainwindow(Ui_MainWindow):
             if wb != 'info.txt':
                 self.device_comboBox.addItem(wb)
 
-        # load in a file if passed as command line
-        if len(sys.argv) > 2:
-            if os.path.isfile(sys.argv[2]):
-                try:
-                    self.load_file()
-                except Exception as e:
-                    print(e)
-
         self._logger.info('finished setting up mainwindow')
 
-#--------------------------------------------------------------------------
-#   _____                                    _____
-#  |  __ \                           ___    |  __ \
-#  | |  | |  _ __    __ _    __ _   ( _ )   | |  | |  _ __    ___    _ __
-#  | |  | | | '__|  / _` |  / _` |  / _ \/\ | |  | | | '__|  / _ \  | '_ \
-#  | |__| | | |    | (_| | | (_| | | (_>  < | |__| | | |    | (_) | | |_) |
-#  |_____/  |_|     \__,_|  \__, |  \___/\/ |_____/  |_|     \___/  | .__/
-#                            __/ |                                  | |
-#                           |___/                                   |_|
-#---------------------------------------------------------------------------
-
-    def dragEnterEvent(self, e):
-        """
-        filters drag events
-        """
-        # check if item being dragged in has a path or not
-        self._logger.debug('dragEnterEvent detected')
-        if e.mimeData().hasUrls():
-            e.accept()  # if has path, allow drops
-
-    def dropEvent(self, e):
-        """
-        filters drop events
-        """
-        # if okayed by the dragEnterEvent
-        self._logger.debug('dropEvent detected')
-        for url in e.mimeData().urls():
-            p = str(url.toLocalFile())
-            if os.path.isfile(p):
-                self.open(p)
 
 #---------------------------------------------------------------------------------------
 #   ______   _   _               _    _                       _   _   _
@@ -173,6 +139,7 @@ class my_mainwindow(Ui_MainWindow):
 #                                                                                  __/ |
 #                                                                                 |___/
 #---------------------------------------------------------------------------------------
+
 
     def new(self):
         """
@@ -284,6 +251,7 @@ class my_mainwindow(Ui_MainWindow):
                                       str(path.basename(tf)))
         self._logger.info(f'{tf} saved')
 
+
 #---------------------------------------------------------------------------------------------------------
 #   _______           _           __  __                                                              _
 #  |__   __|         | |         |  \/  |                                                            | |
@@ -295,34 +263,32 @@ class my_mainwindow(Ui_MainWindow):
 #                                                                  |___/
 #---------------------------------------------------------------------------------------------------------
 
+
     def tab_clicked(self, index):
         self._clicked_tab = index
 
     def set_tab(self):
         try:
             self.text_area = self.tabWidget.currentWidget().text_area
+            self.stat_label.setText(self.tabWidget.tabText(self.tabWidget.currentIndex()))
         except Exception as e:
             self._logger.warning(str(e))
 
     def new_tab(self):
         self._logger.info('creating new tab')
+        # create a new tab & grid layout
         new_tab = QtWidgets.QTabWidget(self.tabWidget)
-
         new_tab.grid_layout = QtWidgets.QGridLayout(new_tab)
         new_tab.grid_layout.setContentsMargins(0, 0, 0, 0)
         new_tab.grid_layout.setObjectName("grid_layout")
 
+        # create text area
         new_tab.text_area = QtWidgets.QPlainTextEdit(new_tab)
         new_tab.text_area.setAcceptDrops(False)
-        # new_tab.text_area = textEdit(new_tab, self.open)
-
-        # add an additional function to the plainTextEdit
-        #   that preserves the undo stack
+        # function clears text while preserving undo stack
         new_tab.text_area.clearText = self.clearText
-
         # tabs keep track of the files they have open
         new_tab._file = None
-
         # insert key bindings
         s1 = QtWidgets.QShortcut(QtGui.QKeySequence("Ctrl+f"), new_tab.text_area)
         s1.activated.connect(self.fnd_dockWidget.show)
@@ -331,8 +297,9 @@ class my_mainwindow(Ui_MainWindow):
 
         # add to layout
         new_tab.grid_layout.addWidget(new_tab.text_area, 0, 0, 1, 1)
-        self.tabWidget.addTab(new_tab, f'untitled {self.doc_count()}')
-
+        title = f'untitled {self.doc_count()}'
+        self.tabWidget.addTab(new_tab, title)
+        self.stat_label.setText(title)
         return new_tab
 
     def close_tab(self, tab):
@@ -343,26 +310,56 @@ class my_mainwindow(Ui_MainWindow):
         except Exception as e:
             logging.warning(str(e))
 
-    def open_in_popout(self):
-        self._logger.debug('opening to the side')
+    def del_all_in_layout(self, layout):
+        """
+        remove contents of a layout from memory
+        """
 
-        # create side panel and text area
-        self.sidepanel = QtWidgets.QDockWidget()
-        text_area = QtWidgets.QPlainTextEdit(self.sidepanel)
+        self._logger.debug('deleting ui content from layout')
+        # this code removes everything from a layout
+        # prior to deletion to prevent memory leaks
+        if layout is not None:
+            while layout.count():
+                item = layout.takeAt(0)
+                widget = item.widget()
+                if widget is not None:
+                    widget.deleteLater()
+                else:
+                    self.del_all_in_layout(layout)
 
-        # get document for text area
-        document = self.tabWidget.widget(self._clicked_tab).text_area.document()
-        text_area.setDocument(document)
-        text_area.setReadOnly(True)
 
-        # set title for the dockable window
-        self.sidepanel.setWindowTitle(self.tabWidget.tabText(self._clicked_tab))
+#--------------------------------------------------------------------------
+#   _____                                    _____
+#  |  __ \                           ___    |  __ \
+#  | |  | |  _ __    __ _    __ _   ( _ )   | |  | |  _ __    ___    _ __
+#  | |  | | | '__|  / _` |  / _` |  / _ \/\ | |  | | | '__|  / _ \  | '_ \
+#  | |__| | | |    | (_| | | (_| | | (_>  < | |__| | | |    | (_) | | |_) |
+#  |_____/  |_|     \__,_|  \__, |  \___/\/ |_____/  |_|     \___/  | .__/
+#                            __/ |                                  | |
+#                           |___/                                   |_|
+#---------------------------------------------------------------------------
 
 
-        # send text_area to dockableWidget
-        self.sidepanel.setWidget(text_area)
-        self.sidepanel.setAttribute(QtCore.Qt.WA_DeleteOnClose)
-        self.sidepanel.show()
+    def dragEnterEvent(self, e):
+        """
+        filters drag events
+        """
+        # check if item being dragged in has a path or not
+        self._logger.debug('dragEnterEvent detected')
+        if e.mimeData().hasUrls():
+            e.accept()  # if has path, allow drops
+
+    def dropEvent(self, e):
+        """
+        filters drop events
+        """
+        # if okayed by the dragEnterEvent
+        self._logger.debug('dropEvent detected')
+        for url in e.mimeData().urls():
+            p = str(url.toLocalFile())
+            if os.path.isfile(p):
+                self.open(p)
+
 
 #----------------------------------------------------------------------------
 #  __          __                 _      _                             _
@@ -381,30 +378,30 @@ class my_mainwindow(Ui_MainWindow):
 #                                    |___/
 #----------------------------------------------------------------------------
 
+
     def load_workbench(self):
         '''
         dynamically import a workbench from the wb folder.
         '''
 
         if self.device_comboBox.currentIndex() == 0:
-            # reset frame if no device selected
-            if self.frame.layout() is not None:
-                # clear all the widgets out of frame so
-                # they don't stay in memory
-                self.del_all_in_layout(self.frame.layout())
-                # que the layout for deletion since it will not
-                # be needed since we are returning to
-                # the start menu
-                self.frame.layout().deleteLater()
-                self.frame.hide()
-                self._wb = None
+            self.wb_toolbar.clear()
+            self.wb_toolbar.hide()
+            if self.wb_widget is not None:
+                self.wb_widget.deleteLater()
+            self.wb_widget = None
+            self._wb = None
+
         else:
+            self.wb_widget = QtWidgets.QWidget()
             self._logger.info('loading workbench')
-            if self.frame.layout() is not None:
-                self.del_all_in_layout(self.frame.layout())
-                self.replace_frame()
+            self.wb_toolbar.clear()
             # dynamically import wb based on device selection
             # this is the reason that the naming convention is important
+            if self.wb_widget is not None:
+                old = self.wb_widget
+                old.deleteLater()
+                self.wb_widget = QtWidgets.QWidget()
             device = self.device_comboBox.currentText()
             class_name = 'my_'+device+'_wb'
             mod_path = 'wb.'+device+'.'+class_name
@@ -413,10 +410,11 @@ class my_mainwindow(Ui_MainWindow):
             self._wb = wb.run_integrated(self)  # self it parent
             # so that the child workbench can pull the elements
             # necessary for its opperation
-            self.frame = self._wb.frame
-            # TEST LINE
-            self.tbar.addWidget(self.frame)
-            self.frame.show()
+            # self.frame = self._wb.frame
+            self.wb_toolbar.addWidget(self._wb.wb_widget)
+            self.get_parent().addToolBarBreak()
+            self.get_parent().addToolBar(self.wb_toolbar)
+            self.wb_toolbar.show()
             self._logger.info('workbench loaded')
 
     def dynamic_import(self, mod_path, class_name):
@@ -428,54 +426,6 @@ class my_mainwindow(Ui_MainWindow):
         self._logger.debug('importing workbench module')
         self._module = __import__(mod_path, fromlist=[class_name])
 
-    def del_all_in_layout(self, layout):
-        """
-        remove contents of a workbench from memory
-        """
-
-        self._logger.debug('deleting ui content from layout')
-        # this code removes everything from a layout
-        # prior to deletion to prevent memory leaks
-        if layout is not None:
-            while layout.count():
-                item = layout.takeAt(0)
-                widget = item.widget()
-                if widget is not None:
-                    widget.deleteLater()
-                else:
-                    self.del_all_in_layout(layout)
-
-    def replace_frame(self):
-        """
-        provide new frame for wb to fill if old one has not
-        been deleted from memory
-        """
-
-        self._logger.debug('replacing frame')
-        # capture the parent
-        p = self.frame.parent()
-
-        # capture frame position
-        for i in range(self.gridLayout.count()):
-            type_ = str(self.gridLayout.itemAt(i).widget())
-            if 'QFrame' in type_:  # Make sure it is a QFrame
-                # row, col, rowspan, colspan
-                r, c, rs, cs = self.gridLayout.getItemPosition(i)
-
-        # delete frame widget
-        self.del_all_in_layout(self.gridLayout)
-
-        # the code below is modified from the
-        # file created py the pyuic that turns ui files
-        # into python files.
-
-        # replace the old frame that is now qued for deletion
-        self.frame = QtWidgets.QFrame(p)  # put parent
-        self.frame.setFrameShape(QtWidgets.QFrame.NoFrame)
-        self.frame.setFrameShadow(QtWidgets.QFrame.Raised)
-        self.frame.setObjectName("frame")
-        # add it back into the layout
-        self.gridLayout.addWidget(self.frame, r, c, rs, cs)
 
 #-----------------------------------------------------------------------
 #                       __  __   _
@@ -485,6 +435,7 @@ class my_mainwindow(Ui_MainWindow):
 #                      | |  | | | | \__ \ | (__
 #                      |_|  |_| |_| |___/  \___|
 #-----------------------------------------------------------------------
+
 
     def clearText(self):
         """
@@ -523,3 +474,6 @@ class my_mainwindow(Ui_MainWindow):
     def doc_count(self):
         self.d_count += 1
         return self.d_count
+
+    def get_parent(self):
+        return self.centralwidget.parentWidget()
