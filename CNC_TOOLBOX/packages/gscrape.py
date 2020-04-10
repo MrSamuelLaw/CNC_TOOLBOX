@@ -115,8 +115,10 @@ class gscrape():
                 line.append(gcode[i][0])
                 text += ' '.join(line) + '\n'
                 line = []
-
+        line.append(x[0])
+        text += ' '.join(line) + '\n'
         return text
+
 
     def insert_line(self, gcode, text, lnum):
         # parse text

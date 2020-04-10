@@ -12,6 +12,13 @@
             "console": "integratedTerminal"
         }
         {
+            "name": "splitView",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/gui/splitTabWidget.py",
+            "console": "integratedTerminal"
+        }
+        {
             "name": "launcher",
             "type": "python",
             "request": "launch",

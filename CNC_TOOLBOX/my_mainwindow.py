@@ -10,6 +10,7 @@ from time import sleep
 from platform import system
 from PySide2.QtWidgets import QFileDialog
 from gui.mainwindow import *
+from gui.splitTabWidget import splitViewTabWidget
 
 
 #-------------------------------------------------------
@@ -81,6 +82,10 @@ class my_mainwindow(Ui_MainWindow):
         # setup to default screen
         self.setupUi(mainwindow)
         self.fnd_dockWidget.hide()
+        self.splitView = splitViewTabWidget()
+        self.splitView.twd['right'].hide()
+        self.cw_gridLayout.replaceWidget(self.placeHolder, self.splitView)
+
         # create status bar widget
         status_widget = QtWidgets.QWidget(mainwindow)
         layout = QtWidgets.QHBoxLayout(mainwindow)
@@ -89,9 +94,14 @@ class my_mainwindow(Ui_MainWindow):
         self.stat_label = QtWidgets.QLabel('', mainwindow)
         layout.addWidget(self.stat_label)
         status_widget.setLayout(layout)
+
         # add status bar widget to the mainwindow
         mainwindow.statusBar().addWidget(status_widget)
 
+        # override drag and drop functions for central widget
+        self.centralwidget.setAcceptDrops(True)
+        self.centralwidget.dragEnterEvent = self.dragEnterEvent
+        self.centralwidget.dropEvent = self.dropEvent
 
         # set up toolbars
         self.toolBar.addWidget(self.toolbar_widget)
@@ -99,25 +109,25 @@ class my_mainwindow(Ui_MainWindow):
         self.wb_toolbar = QtWidgets.QToolBar('wb_toolbar')
         self.wb_widget = None
 
-        # open a blank document on startup
-        self.new_tab()
-        self.text_area = self.tabWidget.currentWidget().text_area
-
-        # link buttons and functions
+        # setup file menu
         self.filemenu = self.menubar.addMenu("file")
-        self.filemenu.addAction("new", self.new)
+        self.filemenu.addAction("new", self.open)
         self.filemenu.addAction("open", self.browse)
-        self.filemenu.addAction("close", self.close)
+        # self.filemenu.addAction("close", self.close)
         self.filemenu.addAction("save", self.save)
         self.filemenu.addAction("save as", self.save_as)
-        self.tabWidget.currentChanged.connect(self.set_tab)
+
+        # connect signals and slots
         self.device_comboBox.currentIndexChanged.connect(self.load_workbench)
         self.find_pushButton.clicked.connect(self.find)
         self.replace_pushButton.clicked.connect(self.replace)
-        self.tabWidget.tabCloseRequested.connect(self.close)
-        self.tabWidget.setAcceptDrops(True)
-        self.tabWidget.dragEnterEvent = self.dragEnterEvent
-        self.tabWidget.dropEvent = self.dropEvent
+        self.splitView.signals.focusChanged.connect(self.setCurrentItemID)
+
+        # setup hotkeys
+        s1 = QtWidgets.QShortcut(QtGui.QKeySequence("Ctrl+f"), self.splitView)
+        s1.activated.connect(self.fnd_dockWidget.show)
+        s2 = QtWidgets.QShortcut(QtGui.QKeySequence("Ctrl+s"), self.splitView)
+        s2.activated.connect(self.save)
 
         # load the wb combo box
         self.device_comboBox.addItem('start menu')
@@ -139,15 +149,20 @@ class my_mainwindow(Ui_MainWindow):
 #                                                                                  __/ |
 #                                                                                 |___/
 #---------------------------------------------------------------------------------------
+    def getCurrentItem(self):
+        return self.splitView._currentItem
 
+    def setCurrentItemID(self, _id):
+        """ catches the current item _id emitted
+        by the split view widget the _id is how the
+        splitViewWidget is able to find items"""
 
-    def new(self):
-        """
-        opens a new tab without contents
-        """
+        self._logger.info(f'current item is {_id}')
+        self._id = _id
+        self.setStatusBarText(_id)
 
-        self._logger.info('opening a new tab')
-        self.open()
+    def setStatusBarText(self, text):
+        self.stat_label.setText(f'current: {text}')
 
     def browse(self):
         """
@@ -166,45 +181,30 @@ class my_mainwindow(Ui_MainWindow):
         open a new tab and load contents
         """
 
-        tab = self.new_tab()
         if filepath is not None:
-            # set the tab filepath
-            tab._file = filepath
             # put the contents on a new tab
             with open(filepath, 'r') as c:
                 contents = c.read()
-                tab.text_area.insertPlainText(str(contents))
-            # set the tab title
-            index = self.tabWidget.indexOf(tab)
-            title = os.path.basename(filepath)
-            self._logger.info(f'opening {title}')
-            self.tabWidget.setTabText(index, title)
+                # set the tab title
+                title = os.path.basename(filepath)
+                self._logger.info(f'opening {title}')
+                self.splitView.openTextDocument(title, contents, filepath=filepath)
         else:
             self._logger.info('opening blank tab')
-            # open a blank tab
-            self.tabWidget.setCurrentWidget(tab)
-        # set view to new tab
-        self.tabWidget.setCurrentWidget(tab)
+            self.splitView.openTextDocument(f'document{self.doc_count()}')
 
     def close(self, index=None):
         """
         close current file and wipe its contents from the screen
         """
-
-        if index is None:  # close tab with focus
-            tab = self.tabWidget.currentWidget()
-            self.close_tab(tab)
-            self._logger.info('file closed')
-        else: # signal came from tabCloseRequested
-            tab = self.tabWidget.widget(index)
-            self.close_tab(tab)
-            self._logger.info('file closed')
+        self.splitView.closeTab()
 
     def save(self):
         """
         save a file using the appropriate method
         """
-        if self.tabWidget.currentWidget()._file is None:
+        current_item = self.splitView.getItemInfo(self._id)
+        if current_item['path'] is None:
             self.save_as()
         elif self.copy_radio.isChecked():
             self.save_copy()
@@ -213,17 +213,17 @@ class my_mainwindow(Ui_MainWindow):
 
     def save_overwrite(self):
         self._logger.info('saving file')
-        tab = self.tabWidget.currentWidget()
-        contents = tab.text_area.toPlainText()
-        with open(tab._file, 'w') as f:
+        item = self.splitView.getItemInfo(self._id)
+        contents = str(item['doc'].toPlainText())
+        with open(item['path'], 'w') as f:
             f.write(contents)
 
     def save_copy(self):
         self._logger.info('saving file copy')
-        tab = self.tabWidget.currentWidget()
-        contents = tab.text_area.toPlainText()
-        file_name = 'copy_'+os.path.basename(tab._file)
-        dirpath = os.path.dirname(tab._file)
+        item = self.splitView.getItemInfo(self._id)
+        contents = item['doc'].toPlainText()
+        file_name = 'copy_'+os.path.basename(item['path'])
+        dirpath = os.path.dirname(item['path'])
         with open(os.path.join(dirpath, file_name), 'w') as f:
             f.write(contents)
 
@@ -244,89 +244,16 @@ class my_mainwindow(Ui_MainWindow):
         if browser.exec_():
             files = browser.selectedFiles()
             tf = files[0]
-            self.tabWidget.currentWidget()._file = tf
+            item = self.splitView.getItemInfo(self._id)
+            item['path'] = tf
+            item['id'] = str(path.basename(tf))
+            self.splitView.updateItem(self._id, item['id'])
+            self._id = item['id']
             with open(tf, 'w') as f:
-                f.write(self.text_area.toPlainText())
-            self.tabWidget.setTabText(self.tabWidget.currentIndex(),
-                                      str(path.basename(tf)))
+                content = str(item['doc'].toPlainText())
+                f.write(content)
+
         self._logger.info(f'{tf} saved')
-
-
-#---------------------------------------------------------------------------------------------------------
-#   _______           _           __  __                                                              _
-#  |__   __|         | |         |  \/  |                                                            | |
-#     | |      __ _  | |__       | \  / |   __ _   _ __     __ _    __ _   _ __ ___     ___   _ __   | |_
-#     | |     / _` | | '_ \      | |\/| |  / _` | | '_ \   / _` |  / _` | | '_ ` _ \   / _ \ | '_ \  | __|
-#     | |    | (_| | | |_) |     | |  | | | (_| | | | | | | (_| | | (_| | | | | | | | |  __/ | | | | | |_
-#     |_|     \__,_| |_.__/      |_|  |_|  \__,_| |_| |_|  \__,_|  \__, | |_| |_| |_|  \___| |_| |_|  \__|
-#                                                                   __/ |
-#                                                                  |___/
-#---------------------------------------------------------------------------------------------------------
-
-
-    def tab_clicked(self, index):
-        self._clicked_tab = index
-
-    def set_tab(self):
-        try:
-            self.text_area = self.tabWidget.currentWidget().text_area
-            self.stat_label.setText(self.tabWidget.tabText(self.tabWidget.currentIndex()))
-        except Exception as e:
-            self._logger.warning(str(e))
-
-    def new_tab(self):
-        self._logger.info('creating new tab')
-        # create a new tab & grid layout
-        new_tab = QtWidgets.QTabWidget(self.tabWidget)
-        new_tab.grid_layout = QtWidgets.QGridLayout(new_tab)
-        new_tab.grid_layout.setContentsMargins(0, 0, 0, 0)
-        new_tab.grid_layout.setObjectName("grid_layout")
-
-        # create text area
-        new_tab.text_area = QtWidgets.QPlainTextEdit(new_tab)
-        new_tab.text_area.setAcceptDrops(False)
-        # function clears text while preserving undo stack
-        new_tab.text_area.clearText = self.clearText
-        # tabs keep track of the files they have open
-        new_tab._file = None
-        # insert key bindings
-        s1 = QtWidgets.QShortcut(QtGui.QKeySequence("Ctrl+f"), new_tab.text_area)
-        s1.activated.connect(self.fnd_dockWidget.show)
-        s2 = QtWidgets.QShortcut(QtGui.QKeySequence("Ctrl+s"), new_tab.text_area)
-        s2.activated.connect(self.save)
-
-        # add to layout
-        new_tab.grid_layout.addWidget(new_tab.text_area, 0, 0, 1, 1)
-        title = f'untitled {self.doc_count()}'
-        self.tabWidget.addTab(new_tab, title)
-        self.stat_label.setText(title)
-        return new_tab
-
-    def close_tab(self, tab):
-        self._logger.info('closing tab')
-        try:
-            self.del_all_in_layout(tab.grid_layout)
-            tab.deleteLater()
-        except Exception as e:
-            logging.warning(str(e))
-
-    def del_all_in_layout(self, layout):
-        """
-        remove contents of a layout from memory
-        """
-
-        self._logger.debug('deleting ui content from layout')
-        # this code removes everything from a layout
-        # prior to deletion to prevent memory leaks
-        if layout is not None:
-            while layout.count():
-                item = layout.takeAt(0)
-                widget = item.widget()
-                if widget is not None:
-                    widget.deleteLater()
-                else:
-                    self.del_all_in_layout(layout)
-
 
 #--------------------------------------------------------------------------
 #   _____                                    _____
@@ -378,7 +305,6 @@ class my_mainwindow(Ui_MainWindow):
 #                                    |___/
 #----------------------------------------------------------------------------
 
-
     def load_workbench(self):
         '''
         dynamically import a workbench from the wb folder.
@@ -426,7 +352,6 @@ class my_mainwindow(Ui_MainWindow):
         self._logger.debug('importing workbench module')
         self._module = __import__(mod_path, fromlist=[class_name])
 
-
 #-----------------------------------------------------------------------
 #                       __  __   _
 #                      |  \/  | (_)
@@ -436,21 +361,6 @@ class my_mainwindow(Ui_MainWindow):
 #                      |_|  |_| |_| |___/  \___|
 #-----------------------------------------------------------------------
 
-
-    def clearText(self):
-        """
-        clear text while preserving the plainTextEdit's undo stack
-        """
-
-        self._logger.info('clearing text')
-        # create a instance of a Q cursor with text doc as parent
-        curs = QtGui.QTextCursor(self.text_area.document())
-        # select all the content
-        curs.select(QtGui.QTextCursor.Document)
-        # delete all the content
-        curs.deleteChar()
-        curs.setPosition(0)
-
     def find(self):
         """
         find function for text area find & replace
@@ -458,8 +368,9 @@ class my_mainwindow(Ui_MainWindow):
 
         text = self.find_lineEdit.text()  # string to find
         self._logger.debug(f'searching text for {text}')
-        self.text_area.setFocus()  # ensures the text gets highlighted
-        self.text_area.find(text)  # attempts to find the next instance
+        item = self.splitView._currentItem  # be careful using currentItem
+        item.setFocus()  # ensures the text gets highlighted
+        item.find(text)  # attempts to find the next instance
 
     def replace(self):
         """
@@ -468,8 +379,9 @@ class my_mainwindow(Ui_MainWindow):
 
         new = self.replace_lineEdit.text()  # get new text
         self._logger.debug(f'replacement text is {new}')
-        self.text_area.textCursor().removeSelectedText()  # remove old
-        self.text_area.textCursor().insertText(new)  # insert new
+        item = self.splitView._currentItem
+        item.textCursor().removeSelectedText()  # remove old
+        item.textCursor().insertText(new)  # insert new
 
     def doc_count(self):
         self.d_count += 1
