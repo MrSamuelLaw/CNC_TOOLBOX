@@ -1,28 +1,28 @@
-INFO:func __init__:Line 70:setting up mainwindow
-INFO:func __init__:Line 139:finished setting up mainwindow
-INFO:func load_workbench:Line 323:loading workbench
-INFO:func __init__:Line 14:shop_bot workbench instantiated
-INFO:func run_integrated:Line 20:getting shop_bot workbench ready
-INFO:func load_workbench:Line 323:loading workbench
+INFO:func __init__:Line 69:setting up mainwindow
+INFO:func __init__:Line 138:finished setting up mainwindow
+INFO:func open:Line 221:opening Pin2.nc
+INFO:func set_current_document_id:Line 194:current item is Pin2.nc
+INFO:func set_current_document_id:Line 194:current item is Pin2.nc
+INFO:func set_current_document_id:Line 194:current item is Pin2.nc
+INFO:func set_current_document_id:Line 194:current item is Pin2.nc
+INFO:func load_workbench:Line 371:loading workbench
 INFO:func __init__:Line 28:my_sherline_lathe_wb instantiated
 INFO:func run_integrated:Line 42:getting sherline lathe wb ready for parent
-INFO:func load_workbench:Line 344:workbench loaded
-INFO:func browse:Line 172:opening file browser
-INFO:func open:Line 190:opening Pin2.nc
-INFO:func setCurrentItemID:Line 160:current item is Pin2.nc
-INFO:func format_file:Line 68:formatting gcode to run on linuxCNC
+INFO:func load_workbench:Line 392:workbench loaded
+INFO:func format_file:Line 61:formatting gcode to run on linuxCNC
 INFO:func insert_safety_line:Line 138:inserting safety line
 INFO:func insert_warnings:Line 297:inserting appropriate warnings
-INFO:func clearText:Line 277:clearing text
-INFO:func setCurrentItemID:Line 160:current item is Pin2.nc
-INFO:func setCurrentItemID:Line 160:current item is Pin2.nc
-INFO:func setCurrentItemID:Line 160:current item is Pin2.nc
-INFO:func setCurrentItemID:Line 160:current item is Pin2.nc
-INFO:func setCurrentItemID:Line 160:current item is Pin2.nc
-INFO:func setCurrentItemID:Line 160:current item is Pin2.nc
-INFO:func setCurrentItemID:Line 160:current item is Pin2.nc
-INFO:func setCurrentItemID:Line 160:current item is Pin2.nc
-INFO:func setCurrentItemID:Line 160:current item is Pin2.nc
-INFO:func save_copy:Line 222:saving file copy
-INFO:func __del__:Line 17:shop_bot_workbench deleted
-INFO:func __del__:Line 35:my_sherline_lathe_wb deleted
+INFO:func clearText:Line 330:clearing text
+INFO:func set_current_document_id:Line 194:current item is Pin2.nc
+INFO:func set_current_document_id:Line 194:current item is Pin2.nc
+INFO:func set_current_document_id:Line 194:current item is Pin2.nc
+INFO:func save_copy:Line 261:saving file copy
+INFO:func open:Line 221:opening copy_Pin2.nc
+INFO:func set_current_document_id:Line 194:current item is copy_Pin2.nc
+INFO:func set_current_document_id:Line 194:current item is Pin2.nc
+INFO:func set_current_document_id:Line 194:current item is copy_Pin2.nc
+INFO:func set_current_document_id:Line 194:current item is copy_Pin2.nc
+INFO:func set_current_document_id:Line 194:current item is copy_Pin2.nc
+INFO:func set_current_document_id:Line 194:current item is Pin2.nc
+INFO:func set_current_document_id:Line 194:current item is Pin2.nc
+INFO:func set_current_document_id:Line 194:current item is Pin2.nc

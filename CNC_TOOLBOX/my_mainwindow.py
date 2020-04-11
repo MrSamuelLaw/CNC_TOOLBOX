@@ -4,7 +4,6 @@ import logging
 import os
 import sys
 import threading
-import asyncio
 from os import path
 from time import sleep
 from platform import system
@@ -13,14 +12,14 @@ from gui.mainwindow import *
 from gui.splitTabWidget import splitViewTabWidget
 
 
-#-------------------------------------------------------
+# -------------------------------------------------------
 #   _        _         _
 #  | |      (_)       | |
 #  | |       _   ___  | |_    ___   _ __     ___   _ __
 #  | |      | | / __| | __|  / _ \ | '_ \   / _ \ | '__|
 #  | |____  | | \__ \ | |_  |  __/ | | | | |  __/ | |
 #  |______| |_| |___/  \__|  \___| |_| |_|  \___| |_|
-#-------------------------------------------------------
+# -------------------------------------------------------
 
 
 class ListenerSignals(QtCore.QObject):
@@ -45,14 +44,14 @@ class Listener(QtCore.QObject):
                 sleep(0.7)
 
 
-#-----------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------------
 #                       _                      _               _
 #                      (_)                    (_)             | |
 #   _ __ ___     __ _   _   _ __   __      __  _   _ __     __| |   ___   __      __
 #  | '_ ` _ \   / _` | | | | '_ \  \ \ /\ / / | | | '_ \   / _` |  / _ \  \ \ /\ / /
 #  | | | | | | | (_| | | | | | | |  \ V  V /  | | | | | | | (_| | | (_) |  \ V  V /
 #  |_| |_| |_|  \__,_| |_| |_| |_|   \_/\_/   |_| |_| |_|  \__,_|  \___/    \_/\_/
-#------------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------------
 
 
 class my_mainwindow(Ui_MainWindow):
@@ -86,17 +85,8 @@ class my_mainwindow(Ui_MainWindow):
         self.splitView.twd['right'].hide()
         self.cw_gridLayout.replaceWidget(self.placeHolder, self.splitView)
 
-        # create status bar widget
-        status_widget = QtWidgets.QWidget(mainwindow)
-        layout = QtWidgets.QHBoxLayout(mainwindow)
-        spacer = QtWidgets.QSpacerItem(2000, 0, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
-        layout.addSpacerItem(spacer)
-        self.stat_label = QtWidgets.QLabel('', mainwindow)
-        layout.addWidget(self.stat_label)
-        status_widget.setLayout(layout)
-
-        # add status bar widget to the mainwindow
-        mainwindow.statusBar().addWidget(status_widget)
+        # create statusbar at the bottom of the screen
+        self.setup_status_bar(mainwindow)
 
         # override drag and drop functions for central widget
         self.centralwidget.setAcceptDrops(True)
@@ -105,7 +95,9 @@ class my_mainwindow(Ui_MainWindow):
 
         # set up toolbars
         self.toolBar.addWidget(self.toolbar_widget)
-        self.toolBar.setMinimumHeight(self.toolbar_widget.height() + self.toolbar_padding)
+        self.toolBar.setMinimumHeight(
+            self.toolbar_widget.height() + self.toolbar_padding
+        )
         self.wb_toolbar = QtWidgets.QToolBar('wb_toolbar')
         self.wb_widget = None
 
@@ -113,15 +105,22 @@ class my_mainwindow(Ui_MainWindow):
         self.filemenu = self.menubar.addMenu("file")
         self.filemenu.addAction("new", self.open)
         self.filemenu.addAction("open", self.browse)
-        # self.filemenu.addAction("close", self.close)
         self.filemenu.addAction("save", self.save)
         self.filemenu.addAction("save as", self.save_as)
 
         # connect signals and slots
-        self.device_comboBox.currentIndexChanged.connect(self.load_workbench)
-        self.find_pushButton.clicked.connect(self.find)
-        self.replace_pushButton.clicked.connect(self.replace)
-        self.splitView.signals.focusChanged.connect(self.setCurrentItemID)
+        self.device_comboBox.currentIndexChanged.connect(
+            self.load_workbench
+        )
+        self.find_pushButton.clicked.connect(
+            self.find
+        )
+        self.replace_pushButton.clicked.connect(
+            self.replace
+        )
+        self.splitView.signals.focusChanged.connect(
+            self.set_current_document_id
+        )
 
         # setup hotkeys
         s1 = QtWidgets.QShortcut(QtGui.QKeySequence("Ctrl+f"), self.splitView)
@@ -138,31 +137,63 @@ class my_mainwindow(Ui_MainWindow):
 
         self._logger.info('finished setting up mainwindow')
 
+    # -------------------------------------------------------------------
+    #    _____   _             _                   ____
+    #   / ____| | |           | |                 |  _ \
+    #  | (___   | |_    __ _  | |_   _   _   ___  | |_) |   __ _   _ __
+    #   \___ \  | __|  / _` | | __| | | | | / __| |  _ <   / _` | | '__|
+    #   ____) | | |_  | (_| | | |_  | |_| | \__ \ | |_) | | (_| | | |
+    #  |_____/   \__|  \__,_|  \__|  \__,_| |___/ |____/   \__,_| |_|
+    # -------------------------------------------------------------------
 
-#---------------------------------------------------------------------------------------
-#   ______   _   _               _    _                       _   _   _
-#  |  ____| (_) | |             | |  | |                     | | | | (_)
-#  | |__     _  | |   ___       | |__| |   __ _   _ __     __| | | |  _   _ __     __ _
-#  |  __|   | | | |  / _ \      |  __  |  / _` | | '_ \   / _` | | | | | | '_ \   / _` |
-#  | |      | | | | |  __/      | |  | | | (_| | | | | | | (_| | | | | | | | | | | (_| |
-#  |_|      |_| |_|  \___|      |_|  |_|  \__,_| |_| |_|  \__,_| |_| |_| |_| |_|  \__, |
-#                                                                                  __/ |
-#                                                                                 |___/
-#---------------------------------------------------------------------------------------
-    def getCurrentItem(self):
-        return self.splitView._currentItem
+    def setup_status_bar(self, mainwindow):
+        # create new widget
+        status_widget = QtWidgets.QWidget(mainwindow)
+        # create layout
+        layout = QtWidgets.QHBoxLayout()
+        # create spacer to push text all the way to the right
+        spacer = QtWidgets.QSpacerItem(
+            2000,  # width
+            0,  # height
+            QtWidgets.QSizePolicy.Expanding,  # width policy
+            QtWidgets.QSizePolicy.Minimum  # height policy
+        )
+        layout.addSpacerItem(spacer)
+        # create status label that self can change
+        self.stat_label = QtWidgets.QLabel('', mainwindow)
+        # put label into layout
+        layout.addWidget(self.stat_label)
+        # apply layout to status widget
+        status_widget.setLayout(layout)
+        mainwindow.statusBar().addWidget(status_widget)
 
-    def setCurrentItemID(self, _id):
+    def set_statusbar_right_text(self, text):
+        self.stat_label.setText(f'current: {text}')
+
+    # ---------------------------------------------------------------------------------------
+    #   ______   _   _               _    _                       _   _   _
+    #  |  ____| (_) | |             | |  | |                     | | | | (_)
+    #  | |__     _  | |   ___       | |__| |   __ _   _ __     __| | | |  _   _ __     __ _
+    #  |  __|   | | | |  / _ \      |  __  |  / _` | | '_ \   / _` | | | | | | '_ \   / _` |
+    #  | |      | | | | |  __/      | |  | | | (_| | | | | | | (_| | | | | | | | | | | (_| |
+    #  |_|      |_| |_|  \___|      |_|  |_|  \__,_| |_| |_|  \__,_| |_| |_| |_| |_|  \__, |
+    #                                                                                  __/ |
+    #                                                                                 |___/
+    # ---------------------------------------------------------------------------------------
+
+    def get_current_plainTextEdit(self):
+        return self.splitView.getPlainTextEdit(
+            self._current_document_id
+        )
+
+    def set_current_document_id(self, _id):
         """ catches the current item _id emitted
         by the split view widget the _id is how the
         splitViewWidget is able to find items"""
 
         self._logger.info(f'current item is {_id}')
-        self._id = _id
-        self.setStatusBarText(_id)
-
-    def setStatusBarText(self, text):
-        self.stat_label.setText(f'current: {text}')
+        self._current_document_id = _id
+        self.set_statusbar_right_text(_id)
 
     def browse(self):
         """
@@ -188,7 +219,11 @@ class my_mainwindow(Ui_MainWindow):
                 # set the tab title
                 title = os.path.basename(filepath)
                 self._logger.info(f'opening {title}')
-                self.splitView.openTextDocument(title, contents, filepath=filepath)
+                self.splitView.openTextDocument(
+                    title,
+                    contents,
+                    filepath=filepath
+                )
         else:
             self._logger.info('opening blank tab')
             self.splitView.openTextDocument(f'document{self.doc_count()}')
@@ -203,8 +238,10 @@ class my_mainwindow(Ui_MainWindow):
         """
         save a file using the appropriate method
         """
-        current_item = self.splitView.getItemInfo(self._id)
-        if current_item['path'] is None:
+        item_info = self.splitView.getItemInfo(
+            self._current_document_id
+        )
+        if item_info['path'] is None:
             self.save_as()
         elif self.copy_radio.isChecked():
             self.save_copy()
@@ -213,17 +250,21 @@ class my_mainwindow(Ui_MainWindow):
 
     def save_overwrite(self):
         self._logger.info('saving file')
-        item = self.splitView.getItemInfo(self._id)
-        contents = str(item['doc'].toPlainText())
-        with open(item['path'], 'w') as f:
+        item_info = self.splitView.getItemInfo(
+            self._current_document_id
+        )
+        contents = str(item_info['doc'].toPlainText())
+        with open(item_info['path'], 'w') as f:
             f.write(contents)
 
     def save_copy(self):
         self._logger.info('saving file copy')
-        item = self.splitView.getItemInfo(self._id)
-        contents = item['doc'].toPlainText()
-        file_name = 'copy_'+os.path.basename(item['path'])
-        dirpath = os.path.dirname(item['path'])
+        item_info = self.splitView.getItemInfo(
+            self._current_document_id
+        )
+        contents = item_info['doc'].toPlainText()
+        file_name = 'copy_'+os.path.basename(item_info['path'])
+        dirpath = os.path.dirname(item_info['path'])
         with open(os.path.join(dirpath, file_name), 'w') as f:
             f.write(contents)
 
@@ -234,28 +275,34 @@ class my_mainwindow(Ui_MainWindow):
 
         self._logger.info('saving file as')
         browser = QFileDialog()
-        # patch to allow the save as to work on linux
-        if system() == 'Linux':
-            options = QFileDialog.Options()
-            options |= QFileDialog.DontUseNativeDialog
-            options |= QFileDialog.DontUseCustomDirectoryIcons
-            browser.setLabelText(QtWidgets.QFileDialog.Accept, 'Save')
-            browser.setOptions(options)
+        # optional settings that allow consistent saving accross platforms
+        options = QFileDialog.Options()
+        options |= QFileDialog.DontUseNativeDialog
+        options |= QFileDialog.DontUseCustomDirectoryIcons
+        browser.setLabelText(QtWidgets.QFileDialog.Accept, 'Save')
+        browser.setOptions(options)
         if browser.exec_():
             files = browser.selectedFiles()
             tf = files[0]
-            item = self.splitView.getItemInfo(self._id)
-            item['path'] = tf
-            item['id'] = str(path.basename(tf))
-            self.splitView.updateItem(self._id, item['id'])
-            self._id = item['id']
+            # get the document associated with tab that has Focus
+            item_info = self.splitView.getItemInfo(self._current_document_id)
+            # get the file path
+            item_info['path'] = tf
+            item_info['id'] = str(path.basename(tf))
+            # update item _id and thus title
+            self.splitView.updateItem(
+                self._current_document_id,
+                item_info['id']
+            )
+            self._current_document_id = item_info['id']
+            # write contents to file
             with open(tf, 'w') as f:
-                content = str(item['doc'].toPlainText())
+                content = str(item_info['doc'].toPlainText())
                 f.write(content)
 
         self._logger.info(f'{tf} saved')
 
-#--------------------------------------------------------------------------
+# --------------------------------------------------------------------------
 #   _____                                    _____
 #  |  __ \                           ___    |  __ \
 #  | |  | |  _ __    __ _    __ _   ( _ )   | |  | |  _ __    ___    _ __
@@ -264,8 +311,7 @@ class my_mainwindow(Ui_MainWindow):
 #  |_____/  |_|     \__,_|  \__, |  \___/\/ |_____/  |_|     \___/  | .__/
 #                            __/ |                                  | |
 #                           |___/                                   |_|
-#---------------------------------------------------------------------------
-
+# ---------------------------------------------------------------------------
 
     def dragEnterEvent(self, e):
         """
@@ -287,8 +333,7 @@ class my_mainwindow(Ui_MainWindow):
             if os.path.isfile(p):
                 self.open(p)
 
-
-#----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
 #  __          __                 _      _                             _
 #  \ \        / /                | |    | |                           | |
 #   \ \  /\  / /    ___    _ __  | | __ | |__     ___   _ __     ___  | |__
@@ -303,7 +348,7 @@ class my_mainwindow(Ui_MainWindow):
 #  |_|  |_|  \__,_| |_| |_|  \__,_|  \__, | |_| |_| |_|  \___| |_| |_|  \__|
 #                                     __/ |
 #                                    |___/
-#----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
 
     def load_workbench(self):
         '''
@@ -311,17 +356,20 @@ class my_mainwindow(Ui_MainWindow):
         '''
 
         if self.device_comboBox.currentIndex() == 0:
+            # close wb_toolbar
             self.wb_toolbar.clear()
             self.wb_toolbar.hide()
             if self.wb_widget is not None:
+                # delete widget from memory
                 self.wb_widget.deleteLater()
+            # set selfs attributes to none
             self.wb_widget = None
             self._wb = None
 
         else:
             self.wb_widget = QtWidgets.QWidget()
             self._logger.info('loading workbench')
-            self.wb_toolbar.clear()
+            self.wb_toolbar.clear()  # clear the wb_toolbar
             # dynamically import wb based on device selection
             # this is the reason that the naming convention is important
             if self.wb_widget is not None:
@@ -352,14 +400,14 @@ class my_mainwindow(Ui_MainWindow):
         self._logger.debug('importing workbench module')
         self._module = __import__(mod_path, fromlist=[class_name])
 
-#-----------------------------------------------------------------------
+# -----------------------------------------------------------------------
 #                       __  __   _
 #                      |  \/  | (_)
 #                      | \  / |  _   ___    ___
 #                      | |\/| | | | / __|  / __|
 #                      | |  | | | | \__ \ | (__
 #                      |_|  |_| |_| |___/  \___|
-#-----------------------------------------------------------------------
+# -----------------------------------------------------------------------
 
     def find(self):
         """

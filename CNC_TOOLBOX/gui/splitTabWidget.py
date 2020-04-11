@@ -23,8 +23,7 @@ class splitViewTabWidget(QtWidgets.QWidget):
 
     self.tabDict keeps track of a tabs _id and count
 
-    tab._type, property that is used to allow tabs to
-    duplicate properly and is accessed on drop events
+    never access _currentItem directly, use getPlainTextEdit instead
     """
 
     def __init__(self, parent=None):
@@ -33,7 +32,10 @@ class splitViewTabWidget(QtWidgets.QWidget):
         self.signals = splitViewTabWidget_signals()
 
         # tabWidgets
-        self.twd = {'left': QtWidgets.QTabWidget(self), 'right': QtWidgets.QTabWidget(self)}
+        self.twd = {
+            'left': QtWidgets.QTabWidget(self),
+            'right': QtWidgets.QTabWidget(self)
+        }
         self.twd['left'].setObjectName('left')
         self.twd['right'].setObjectName('right')
         self.twd['left'].setDocumentMode(True)
@@ -75,11 +77,6 @@ class splitViewTabWidget(QtWidgets.QWidget):
             self.twd['right'].tabBar(): self._tabBarEventFilter
         }
 
-        # typeDict
-        self.typeDict = {
-            'text': self.openTextDocument
-        }
-
         # tabDict
         self.tabDict = {}
 
@@ -96,7 +93,8 @@ class splitViewTabWidget(QtWidgets.QWidget):
             for i in range(self.twd[key].count()):  # iterate through tabs
                 if self.twd[key].widget(i)._id == _id:  # check ids
                     if key == side:  # is document already open on this side?
-                        self._logger.debug('failed, document alread open on this side')
+                        self._logger.debug(
+                            'failed, document alread open on this side')
                         return  # if so break early
                     else:
                         self._logger.debug('attempting to open on other side')
@@ -108,22 +106,32 @@ class splitViewTabWidget(QtWidgets.QWidget):
             self.tabDict[_id]['count'] += 1
         else:
             document = QtGui.QTextDocument()
-            document.setDocumentLayout(QtWidgets.QPlainTextDocumentLayout(document))
+            document.setDocumentLayout(
+                QtWidgets.QPlainTextDocumentLayout(document)
+            )
             self.tabDict[_id] = {'doc': document, 'count': 1, 'path': filepath}
 
         # give document to plainTextEdit
         plainTextEdit = QtWidgets.QPlainTextEdit()
         plainTextEdit.setDocument(self.tabDict[_id]['doc'])
+        # insert text if any
         plainTextEdit.insertPlainText(text)
+        # move cursor to the top of the docuement
+        plainTextEdit.moveCursor(QtGui.QTextCursor.Start)
+        plainTextEdit.ensureCursorVisible()
         # assign _id
         plainTextEdit._id = _id
-        plainTextEdit._type = 'text'
         # assign addtional functionality
         plainTextEdit.clearText = self.clearText
         plainTextEdit.setAcceptDrops(False)
+        # install event filters
+        plainTextEdit.installEventFilter(self)
+        self._filterDict[plainTextEdit] = self._tabFilter
         # add to tabWidget
         self.twd[side].addTab(plainTextEdit, title)
-        self._installTabFilter()
+        # set current widget and emit _id
+        self._currentItem = plainTextEdit
+        self.signals.focusChanged.emit(self._currentItem._id)
         self._logger.debug('successfully opened document')
 
     def closeTab(self, index=None):
@@ -142,12 +150,38 @@ class splitViewTabWidget(QtWidgets.QWidget):
                 # delete the document if it was the last one
                 if not self.tabDict[widget._id]['count']:
                     del self.tabDict[widget._id]
-                # if it was also the last one on the right side
+                # if it was the last tab on the right side
                 if (side == 'right') and (self.twd['right'].count() == 1):
+                    self.signals.focusChanged.emit(
+                        # update status label
+                        self.twd['left'].currentWidget()._id
+                    )
                     self.twd['right'].hide()
 
     def getItemInfo(self, _id):
+        """
+        used to get plainTextEdit's underlying
+        document and path. To get the plainTextEdit
+        its self, use the _currentItem attribute
+
+        returns a dict with the following
+        properties
+        {
+            _id, also the tab title
+            doc, the underlying document that allows
+                 synced text between tabs
+            path, the documents file path
+            count, how many open tabs have the same documents
+        }
+        """
         return self.tabDict[_id]
+
+    def getPlainTextEdit(self, _id):
+        for tabWidget in self.twd.values():
+            for i in range(tabWidget.count()):
+                plainTextEdit = tabWidget.widget(i)
+                if plainTextEdit._id == _id:
+                    return plainTextEdit
 
     def updateItem(self, old_id, new_id):
         for tabWidget in self.twd.values():
@@ -158,6 +192,7 @@ class splitViewTabWidget(QtWidgets.QWidget):
                     tabWidget.setTabText(i, new_id)
         self.tabDict[new_id] = self.tabDict[old_id]
         del self.tabDict[old_id]
+        self.signals.focusChanged.emit(new_id)
 
     def _tabClicked(self, index):
         # determin sender
@@ -165,6 +200,7 @@ class splitViewTabWidget(QtWidgets.QWidget):
             if bool(self.twd[side].sender()):
                 self._clickedTab = self.twd[side].widget(index)
                 self._clickedTabText = self.twd[side].tabText(index)
+                self.signals.focusChanged.emit(self._clickedTab._id)
 
     def _eventFilter(self, Object, event):
         self._filterDict[Object](Object, event)
@@ -176,30 +212,33 @@ class splitViewTabWidget(QtWidgets.QWidget):
             gp = self.mapFromGlobal(event.globalPos())
             p = event.pos()
             if not self.twd['right'].isHidden():
-                if (self.twd['left'].geometry().contains(gp)) and (p.y() < self.twd['left'].tabBar().height()):
+                # HIGHLIGHT DROP ZONES
+                if ((self.twd['left'].geometry().contains(gp)) and
+                        (p.y() < self.twd['left'].tabBar().height())):
                     self._canDrop('left')
                     self._normal('right')
-                elif (self.twd['right'].geometry().contains(gp)) and (p.y() < self.twd['left'].tabBar().height()):
+                elif ((self.twd['right'].geometry().contains(gp)) and
+                        (p.y() < self.twd['left'].tabBar().height())):
                     self._canDrop('right')
                     self._normal('left')
                 else:
                     self._normal('left')
                     self._normal('right')
-
             # if right widget is hidden
             else:
                 # if it's in the right tenth of the screen
-                if (p.x() > self.twd['left'].width()*0.9) and (p.y() > self.twd['left'].tabBar().height()):
+                if ((p.x() > self.twd['left'].width()*0.9) and
+                        (p.y() > self.twd['left'].tabBar().height())):
                     self.twd['right'].show()
+
         # DROPPING
         elif event.type() == QtCore.QEvent.MouseButtonRelease:
             gp = self.mapFromGlobal(event.globalPos())
             p = event.pos()
-
             # if not dropped in its own parent
             if not (Object.parent().geometry().contains(gp)):
 
-                # if in the left widget
+                # DROPPED IN LEFT WIDGET
                 if self.twd['left'].geometry().contains(gp):
                     # if on the tabBar
                     if (p.y() < self.twd['left'].tabBar().height()):
@@ -216,11 +255,10 @@ class splitViewTabWidget(QtWidgets.QWidget):
                     else:
                         # get the widget id and
                         _id = self._clickedTab._id
-                        _type = self._clickedTab._type
                         # attempt to open it on the otherside
-                        self.typeDict[_type](_id)
+                        self.openTextDocument(_id)
 
-                # if in the right widget
+                # DROPPED IN THE RIGHT WIDGET
                 elif self.twd['right'].geometry().contains(gp):
                     # if on the tabBar
                     if (p.y() < self.twd['left'].tabBar().height()):
@@ -234,9 +272,8 @@ class splitViewTabWidget(QtWidgets.QWidget):
                     else:
                         # get the widget id and
                         _id = self._clickedTab._id
-                        _type = self._clickedTab._type
                         # attempt to open it on the otherside
-                        self.typeDict[_type](_id, side='right')
+                        self.openTextDocument(_id, side='right')
 
             # set all the tabBar stylings back to normal
             self._normal('left')
@@ -249,14 +286,16 @@ class splitViewTabWidget(QtWidgets.QWidget):
             self._currentItem = Object
             self.signals.focusChanged.emit(Object._id)
 
-    def _installTabFilter(self):
-        for tabWidget in self.twd.values():
-            for i in range(tabWidget.count()):
-                tab = tabWidget.widget(i)
-                tab.installEventFilter(self)
-                self._filterDict[tab] = self._tabFilter
-
-    # TAB BAR STYLING FUNCTIONS
+    # --------------------------------------------------------------------------
+    #   _______           _        _____   _             _   _
+    #  |__   __|         | |      / ____| | |           | | (_)
+    #     | |      __ _  | |__   | (___   | |_   _   _  | |  _   _ __     __ _
+    #     | |     / _` | | '_ \   \___ \  | __| | | | | | | | | | '_ \   / _` |
+    #     | |    | (_| | | |_) |  ____) | | |_  | |_| | | | | | | | | | | (_| |
+    #     |_|     \__,_| |_.__/  |_____/   \__|  \__, | |_| |_| |_| |_|  \__, |
+    #                                             __/ |                   __/ |
+    #                                            |___/                   |___/
+    # ---------------------------------------------------------------------------
 
     def _canDrop(self, side):
         self.twd[side].setStyleSheet("""
@@ -268,7 +307,21 @@ class splitViewTabWidget(QtWidgets.QWidget):
     def _normal(self, side):
         self.twd[side].setStyleSheet('')
 
-    # TEXT ITEM HELPER FUNCTIONS
+    # ----------------------------------------------------------------------------------
+    #   _______                 _
+    #  |__   __|               | |
+    #     | |      ___  __  __ | |_
+    #     | |     / _ \ \ \/ / | __|
+    #     | |    |  __/  >  <  | |_
+    #   __|_|_    \___| /_/\_\  \__|                                               _
+    #  |  \/  |                                                                   | |
+    #  | \  / |   __ _   _ __     __ _    __ _    ___   _ __ ___     ___   _ __   | |_
+    #  | |\/| |  / _` | | '_ \   / _` |  / _` |  / _ \ | '_ ` _ \   / _ \ | '_ \  | __|
+    #  | |  | | | (_| | | | | | | (_| | | (_| | |  __/ | | | | | | |  __/ | | | | | |_
+    #  |_|  |_|  \__,_| |_| |_|  \__,_|  \__, |  \___| |_| |_| |_|  \___| |_| |_|  \__|
+    #                                     __/ |
+    #                                    |___/
+    # ----------------------------------------------------------------------------------
 
     def clearText(self):
         """
@@ -282,22 +335,3 @@ class splitViewTabWidget(QtWidgets.QWidget):
         # delete all the content
         curs.deleteChar()
         curs.setPosition(0)
-
-
-if __name__ == "__main__":
-    import sys
-    logging.basicConfig(level=logging.DEBUG)
-    app = QtWidgets.QApplication(sys.argv)
-    app.startingUp()
-    # create widget
-    window = splitViewTabWidget()
-    window.setWindowTitle('splitViewTabWidget')
-    window.setMinimumHeight(600)
-    window.setMinimumWidth(800)
-    # open text in the widget
-    window.openTextDocument('title', 'text here', 'left')
-    window.openTextDocument('title2', 'different text here', 'right')
-
-    window.show()
-    code = app.exec_()
-    sys.exit(code)
