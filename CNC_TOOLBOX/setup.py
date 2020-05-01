@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 
 '''
@@ -63,8 +63,6 @@ def create_venv():
     """
 
 
-
-
 def main():
     """
     setup global enviroment for cnc_toolbox to run properly
@@ -72,14 +70,17 @@ def main():
     if int(sys.version[0]) == 3:  # make sure python3 is being used
         # put in dependencies
         dependencies = [
-        'setuptools',
-        'PySide2==5.13.0',
-        'pyperclip',
-        'tendo'
+            'setuptools',
+            'PySide2==5.14.0',
+            'pyperclip',
+            'tendo'
         ]
         for d in dependencies:
             try:  # if not met install it
-                p = subprocess.Popen([sys.executable, "-m", "pip", "install", str(d)], stdout=subprocess.PIPE)
+                p = subprocess.Popen(
+                    [sys.executable, "-m", "pip3", "install", str(d)],
+                    stdout=subprocess.PIPE
+                )
                 output = p.communicate()[0].decode('ASCII')
                 if p.returncode:
                     print(output)

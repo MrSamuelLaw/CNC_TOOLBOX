@@ -5,10 +5,12 @@
 		},
 		{
 			"path": "./wb/sherline_lathe"
-		}
+		},
 		{
 			"path": "./wb/shop_bot"
 		}
 	],
-	"settings": {}
+	"settings": {
+		"pythonTestExplorer.testFramework": "unittest"
+	}
 }

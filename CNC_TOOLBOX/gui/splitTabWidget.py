@@ -6,9 +6,7 @@ import logging
 
 
 class splitViewTabWidget_signals(QtCore.QObject):
-    """
-    custom signals for the splitViewTabWidget
-    """
+    """custom signals for the splitViewTabWidget"""
 
     focusChanged = QtCore.Signal(str)
 
@@ -147,9 +145,14 @@ class splitViewTabWidget(QtWidgets.QWidget):
                 widget.deleteLater()
                 # index the count
                 self.tabDict[widget._id]['count'] -= 1
+
                 # delete the document if it was the last one
                 if not self.tabDict[widget._id]['count']:
                     del self.tabDict[widget._id]
+
+                # delete the tab from the _filterDict
+                del self._filterDict[widget]
+
                 # if it was the last tab on the right side
                 if (side == 'right') and (self.twd['right'].count() == 1):
                     self.signals.focusChanged.emit(
@@ -203,7 +206,10 @@ class splitViewTabWidget(QtWidgets.QWidget):
                 self.signals.focusChanged.emit(self._clickedTab._id)
 
     def _eventFilter(self, Object, event):
-        self._filterDict[Object](Object, event)
+        try:  # checks for key errors
+            self._filterDict[Object](Object, event)
+        except KeyError:
+            pass
         return False
 
     def _tabBarEventFilter(self, Object, event):
@@ -215,15 +221,12 @@ class splitViewTabWidget(QtWidgets.QWidget):
                 # HIGHLIGHT DROP ZONES
                 if ((self.twd['left'].geometry().contains(gp)) and
                         (p.y() < self.twd['left'].tabBar().height())):
-                    self._canDrop('left')
-                    self._normal('right')
+                    self._canDropLeft()
                 elif ((self.twd['right'].geometry().contains(gp)) and
                         (p.y() < self.twd['left'].tabBar().height())):
-                    self._canDrop('right')
-                    self._normal('left')
+                    self._canDropRight()
                 else:
-                    self._normal('left')
-                    self._normal('right')
+                    self._normal()
             # if right widget is hidden
             else:
                 # if it's in the right tenth of the screen
@@ -245,8 +248,7 @@ class splitViewTabWidget(QtWidgets.QWidget):
                         # prevent duplicates on the same side
                         for i in range(self.twd['left'].count()):
                             if self.twd['left'].widget(i)._id == self._clickedTab._id:
-                                self._normal('left')
-                                self._normal('right')
+                                self._normal()
                                 return
                         self.twd['left'].addTab(self._clickedTab, self._clickedTabText)
                         # close if right one is empty
@@ -265,8 +267,7 @@ class splitViewTabWidget(QtWidgets.QWidget):
                         # prevent duplicates on the same side
                         for i in range(self.twd['right'].count()):
                             if self.twd['right'].widget(i)._id == self._clickedTab._id:
-                                self._normal('left')
-                                self._normal('right')
+                                self._normal()
                                 return
                         self.twd['right'].addTab(self._clickedTab, self._clickedTabText)
                     else:
@@ -274,10 +275,15 @@ class splitViewTabWidget(QtWidgets.QWidget):
                         _id = self._clickedTab._id
                         # attempt to open it on the otherside
                         self.openTextDocument(_id, side='right')
+                    # if left count is zero, move everything to the left widget
+                    if not self.twd['left'].count():
+                        while self.twd['right'].count() > 0:
+                            tab = self.twd['right'].widget(0)
+                            text = self.twd['right'].tabText(0)
+                            self.twd['left'].addTab(tab, text)
 
             # set all the tabBar stylings back to normal
-            self._normal('left')
-            self._normal('right')
+            self._normal()
             if not self.twd['right'].count():
                 self.twd['right'].hide()
 
@@ -287,25 +293,34 @@ class splitViewTabWidget(QtWidgets.QWidget):
             self.signals.focusChanged.emit(Object._id)
 
     # --------------------------------------------------------------------------
-    #   _______           _        _____   _             _   _
-    #  |__   __|         | |      / ____| | |           | | (_)
-    #     | |      __ _  | |__   | (___   | |_   _   _  | |  _   _ __     __ _
-    #     | |     / _` | | '_ \   \___ \  | __| | | | | | | | | | '_ \   / _` |
-    #     | |    | (_| | | |_) |  ____) | | |_  | |_| | | | | | | | | | | (_| |
-    #     |_|     \__,_| |_.__/  |_____/   \__|  \__, | |_| |_| |_| |_|  \__, |
-    #                                             __/ |                   __/ |
-    #                                            |___/                   |___/
+    #    _____   _             _
+    #   / ____| | |           | |
+    #  | (___   | |_    __ _  | |_    ___   ___
+    #   \___ \  | __|  / _` | | __|  / _ \ / __|
+    #   ____) | | |_  | (_| | | |_  |  __/ \__ \
+    #  |_____/   \__|  \__,_|  \__|  \___| |___/
     # ---------------------------------------------------------------------------
 
-    def _canDrop(self, side):
-        self.twd[side].setStyleSheet("""
+    # TABBAR STATES
+    def _normal(self):
+        self.twd['left'].setStyleSheet('')
+        self.twd['right'].setStyleSheet('')
+
+    def _canDropLeft(self):
+        self.twd['left'].setStyleSheet("""
             QTabBar {
                  background: #727272
             }
         """)
+        self.twd['right'].setStyleSheet('')
 
-    def _normal(self, side):
-        self.twd[side].setStyleSheet('')
+    def _canDropRight(self):
+        self.twd['right'].setStyleSheet("""
+            QTabBar {
+                 background: #727272
+            }
+        """)
+        self.twd['left'].setStyleSheet('')
 
     # ----------------------------------------------------------------------------------
     #   _______                 _

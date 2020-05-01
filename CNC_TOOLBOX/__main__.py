@@ -1,20 +1,51 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 
 import os
 import sys
-import subprocess
 import logging
-
-# if singleton, go ahead and exit
+import platform
 from tendo import singleton
+from tools import sync_ui
+from PySide2 import QtGui, QtWidgets, QtCore
 me = singleton.SingleInstance()
 
-# sync ui prior to import
-import tools.sync_ui
-if True:
-    tools.sync_ui.sync()
-from my_mainwindow import *
+# set ui syncing status
+SYNC_ON_STARTUP = True
+
+
+def sync_ui_files():
+    if SYNC_ON_STARTUP:
+        sync_ui.sync()
+
+
+def set_style(app, style):
+    if style == 'dark':
+        from PySide2.QtGui import QPalette, Qt, QColor
+        # set dark style
+        app.setStyle("Fusion")
+        dark_palette = QPalette()
+        dark_palette.setColor(QPalette.Window, QColor(53, 53, 53))
+        dark_palette.setColor(QPalette.WindowText, Qt.white)
+        dark_palette.setColor(QPalette.Base, QColor(25, 25, 25))
+        dark_palette.setColor(QPalette.AlternateBase, QColor(53, 53, 53))
+        dark_palette.setColor(QPalette.ToolTipBase, Qt.white)
+        dark_palette.setColor(QPalette.ToolTipText, Qt.white)
+        dark_palette.setColor(QPalette.Text, Qt.white)
+        dark_palette.setColor(QPalette.Button, QColor(53, 53, 53))
+        dark_palette.setColor(QPalette.ButtonText, Qt.white)
+        dark_palette.setColor(QPalette.BrightText, Qt.red)
+        dark_palette.setColor(QPalette.Link, QColor(42, 130, 218))
+        dark_palette.setColor(QPalette.Highlight, QColor(42, 130, 218))
+        dark_palette.setColor(QPalette.HighlightedText, Qt.black)
+        app.setPalette(dark_palette)
+        app.setStyleSheet("""
+            QToolTip {
+                color: #ffffff;
+                background-color: #2a82da;
+                border: 1px solid white;
+            }
+        """)
 
 
 def main():
@@ -30,29 +61,22 @@ def main():
         # - argv[2] file to open's directory
         os.chdir(sys.argv[1])
 
-# -----------------------------------------------------------------------
-#    _____          _       _
-#   / ____|        | |     | |
-#  | (___     ___  | |_    | |        ___     __ _    __ _    ___   _ __
-#   \___ \   / _ \ | __|   | |       / _ \   / _` |  / _` |  / _ \ | '__|
-#   ____) | |  __/ | |_    | |____  | (_) | | (_| | | (_| | |  __/ | |
-#  |_____/   \___|  \__|   |______|  \___/   \__, |  \__, |  \___| |_|
-#                                             __/ |   __/ |
-#                                            |___/   |___/
-# ------------------------------------------------------------------------
-
     # set logger handle
     handle = 'log'
     logger = logging.getLogger(handle)
     logger.setLevel(level=logging.DEBUG)
 
     # define message format
-    file_format = logging.Formatter('%(levelname)s:'
-                                    'func %(funcName)s:'
-                                    'Line %(lineno)d:'
-                                    '%(message)s')
-    console_format = logging.Formatter('%(levelname)s:'
-                                       '%(message)s')
+    file_format = logging.Formatter(
+        '%(levelname)s:'
+        'func %(funcName)s:'
+        'Line %(lineno)d:'
+        '%(message)s'
+    )
+    console_format = logging.Formatter(
+        '%(levelname)s:'
+        '%(message)s'
+    )
 
     # make seperate file and console output filters
     fh = logging.FileHandler('.log')
@@ -72,19 +96,35 @@ def main():
 
 if __name__ == "__main__":
     main()  # call to collect cmd line arguments
-    import sys
+    sync_ui_files()
+    from my_mainwindow import my_mainwindow
+
     app = QtWidgets.QApplication(sys.argv)
-    app.startingUp()
-    MainWindow = QtWidgets.QMainWindow()
-    ui = my_mainwindow(MainWindow)
-    MainWindow.setWindowTitle("CNC TOOLBOX")
-    icon = QtGui.QIcon("icon/logo.png")
-    MainWindow.setWindowIcon(icon)
-    MainWindow.show()
+    set_style(app, 'dark')
+
+    mainwindow = QtWidgets.QMainWindow()
+    my_mainwindow(mainwindow)
+    mainwindow.setWindowTitle("CNC TOOLBOX")
+    # different sizes for different computers
+    icon = QtGui.QIcon()
+    icon.addFile('icon/icon16x16.png', QtCore.QSize(16, 16))
+    icon.addFile('icon/icon24x24.png', QtCore.QSize(24, 24))
+    icon.addFile('icon/icon32x32.png', QtCore.QSize(32, 32))
+    icon.addFile('icon/icon48x48.png', QtCore.QSize(48, 48))
+    icon.addFile('icon/icon256x256.png', QtCore.QSize(256, 256))
+
+    # on windows supress python icon
+    if platform.system() == 'Windows':
+        import ctypes
+        myappid = 'CNCTOOLBOX'  # arbitrary string
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+    app.setWindowIcon(icon)
+    mainwindow.setWindowIcon(icon)
+    mainwindow.show()
+
     return_code = app.exec_()
     # clean up the pipe
     with open('.pipe', 'w') as p:
         p.write('')
+
     sys.exit(return_code)
-
-

@@ -66,10 +66,13 @@ class gscrape():
                     # NUMBER BRANCH
                     if item.isnumeric() or item in self._math_operators:
                         buff += item
+
                     # ALPHA BRANCH
                     elif item.isalpha():
                         if last.isalpha():
-                            raise DoubleLetter('two sequentail characters found not in code')
+                            raise ValueError(
+                                'two sequentail characters found not in code'
+                            )
                         elif len(buff):
                             gcode.append([buff, 'code', lnum])
                             buff = item
@@ -88,7 +91,7 @@ class gscrape():
                                 if self._is_comment_flag(item):
                                     flag_count += self._get_flag_count(item)
                                 buff += item
-                            except StopIteration as e:
+                            except StopIteration:
                                 flag_count = 0
                                 gcode.append([buff, 'comment', lnum])
                                 buff = ''
@@ -96,7 +99,7 @@ class gscrape():
                         buff = ''
 
             # iteration exception handling
-            except StopIteration as s:
+            except StopIteration:
                 if buff:
                     gcode.append([buff, 'code', lnum])
                     buff = ''
@@ -118,7 +121,6 @@ class gscrape():
         line.append(x[0])
         text += ' '.join(line) + '\n'
         return text
-
 
     def insert_line(self, gcode, text, lnum):
         # parse text

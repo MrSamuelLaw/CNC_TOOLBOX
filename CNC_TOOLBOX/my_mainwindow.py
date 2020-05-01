@@ -2,13 +2,10 @@
 
 import logging
 import os
-import sys
 import threading
-from os import path
 from time import sleep
-from platform import system
-from PySide2.QtWidgets import QFileDialog
-from gui.mainwindow import *
+from PySide2 import QtCore, QtGui, QtWidgets
+from gui.mainwindow import Ui_MainWindow
 from gui.splitTabWidget import splitViewTabWidget
 
 
@@ -80,7 +77,7 @@ class my_mainwindow(Ui_MainWindow):
 
         # setup to default screen
         self.setupUi(mainwindow)
-        self.fnd_dockWidget.hide()
+        self.bottomToolBar.hide()
         self.splitView = splitViewTabWidget()
         self.splitView.twd['right'].hide()
         self.cw_gridLayout.replaceWidget(self.placeHolder, self.splitView)
@@ -100,6 +97,7 @@ class my_mainwindow(Ui_MainWindow):
         )
         self.wb_toolbar = QtWidgets.QToolBar('wb_toolbar')
         self.wb_widget = None
+        self.bottomToolBar.addWidget(self.findReplaceWidget)
 
         # setup file menu
         self.filemenu = self.menubar.addMenu("file")
@@ -109,28 +107,21 @@ class my_mainwindow(Ui_MainWindow):
         self.filemenu.addAction("save as", self.save_as)
 
         # connect signals and slots
-        self.device_comboBox.currentIndexChanged.connect(
-            self.load_workbench
-        )
-        self.find_pushButton.clicked.connect(
-            self.find
-        )
-        self.replace_pushButton.clicked.connect(
-            self.replace
-        )
-        self.splitView.signals.focusChanged.connect(
-            self.set_current_document_id
-        )
+        self.device_comboBox.currentIndexChanged.connect(self.load_workbench)
+        self.find_pushButton.clicked.connect(self.find)
+        self.replace_pushButton.clicked.connect(self.replace)
+        self.splitView.signals.focusChanged.connect(self.set_current_document_id)
+        self.hideButton.clicked.connect(self.bottomToolBar.hide)
 
         # setup hotkeys
         s1 = QtWidgets.QShortcut(QtGui.QKeySequence("Ctrl+f"), self.splitView)
-        s1.activated.connect(self.fnd_dockWidget.show)
+        s1.activated.connect(self.bottomToolBar.show)
         s2 = QtWidgets.QShortcut(QtGui.QKeySequence("Ctrl+s"), self.splitView)
         s2.activated.connect(self.save)
 
         # load the wb combo box
         self.device_comboBox.addItem('start menu')
-        self.wb_list = os.listdir(os.getcwd()+'/wb')
+        self.wb_list = os.listdir(os.getcwd() + '/wb')
         for wb in self.wb_list:
             if wb != 'info.txt':
                 self.device_comboBox.addItem(wb)
@@ -201,7 +192,7 @@ class my_mainwindow(Ui_MainWindow):
         """
 
         self._logger.info('opening file browser')
-        browser = QFileDialog()
+        browser = QtWidgets.QFileDialog()
         if browser.exec_():
             files = browser.selectedFiles()
             tf = files[0]
@@ -263,7 +254,7 @@ class my_mainwindow(Ui_MainWindow):
             self._current_document_id
         )
         contents = item_info['doc'].toPlainText()
-        file_name = 'copy_'+os.path.basename(item_info['path'])
+        file_name = 'copy_' + os.path.basename(item_info['path'])
         dirpath = os.path.dirname(item_info['path'])
         with open(os.path.join(dirpath, file_name), 'w') as f:
             f.write(contents)
@@ -274,12 +265,12 @@ class my_mainwindow(Ui_MainWindow):
         """
 
         self._logger.info('saving file as')
-        browser = QFileDialog()
+        browser = QtWidgets.QFileDialog()
         # optional settings that allow consistent saving accross platforms
-        options = QFileDialog.Options()
-        options |= QFileDialog.DontUseNativeDialog
-        options |= QFileDialog.DontUseCustomDirectoryIcons
-        browser.setLabelText(QtWidgets.QFileDialog.Accept, 'Save')
+        options = browser.Options()
+        options |= browser.DontUseNativeDialog
+        options |= browser.DontUseCustomDirectoryIcons
+        browser.setLabelText(browser.Accept, 'Save')
         browser.setOptions(options)
         if browser.exec_():
             files = browser.selectedFiles()
@@ -288,7 +279,7 @@ class my_mainwindow(Ui_MainWindow):
             item_info = self.splitView.getItemInfo(self._current_document_id)
             # get the file path
             item_info['path'] = tf
-            item_info['id'] = str(path.basename(tf))
+            item_info['id'] = str(os.path.basename(tf))
             # update item _id and thus title
             self.splitView.updateItem(
                 self._current_document_id,
@@ -300,18 +291,18 @@ class my_mainwindow(Ui_MainWindow):
                 content = str(item_info['doc'].toPlainText())
                 f.write(content)
 
-        self._logger.info(f'{tf} saved')
+            self._logger.info(f'{tf} saved')
 
-# --------------------------------------------------------------------------
-#   _____                                    _____
-#  |  __ \                           ___    |  __ \
-#  | |  | |  _ __    __ _    __ _   ( _ )   | |  | |  _ __    ___    _ __
-#  | |  | | | '__|  / _` |  / _` |  / _ \/\ | |  | | | '__|  / _ \  | '_ \
-#  | |__| | | |    | (_| | | (_| | | (_>  < | |__| | | |    | (_) | | |_) |
-#  |_____/  |_|     \__,_|  \__, |  \___/\/ |_____/  |_|     \___/  | .__/
-#                            __/ |                                  | |
-#                           |___/                                   |_|
-# ---------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
+    #   _____                                    _____
+    #  |  __ \                           ___    |  __ \
+    #  | |  | |  _ __    __ _    __ _   ( _ )   | |  | |  _ __    ___    _ __
+    #  | |  | | | '__|  / _` |  / _` |  / _ \/\ | |  | | | '__|  / _ \  | '_ \
+    #  | |__| | | |    | (_| | | (_| | | (_>  < | |__| | | |    | (_) | | |_) |
+    #  |_____/  |_|     \__,_|  \__, |  \___/\/ |_____/  |_|     \___/  | .__/
+    #                            __/ |                                  | |
+    #                           |___/                                   |_|
+    # ---------------------------------------------------------------------------
 
     def dragEnterEvent(self, e):
         """
@@ -333,22 +324,22 @@ class my_mainwindow(Ui_MainWindow):
             if os.path.isfile(p):
                 self.open(p)
 
-# ----------------------------------------------------------------------------
-#  __          __                 _      _                             _
-#  \ \        / /                | |    | |                           | |
-#   \ \  /\  / /    ___    _ __  | | __ | |__     ___   _ __     ___  | |__
-#    \ \/  \/ /    / _ \  | '__| | |/ / | '_ \   / _ \ | '_ \   / __| | '_ \
-#     \  /\  /    | (_) | | |    |   <  | |_) | |  __/ | | | | | (__  | | | |
-#   __ \/_ \/      \___/  |_|    |_|\_\ |_.__/   \___| |_| |_|  \___| |_| |_|
-#   __  __                                                              _
-#  |  \/  |                                                            | |
-#  | \  / |   __ _   _ __     __ _    __ _   _ __ ___     ___   _ __   | |_
-#  | |\/| |  / _` | | '_ \   / _` |  / _` | | '_ ` _ \   / _ \ | '_ \  | __|
-#  | |  | | | (_| | | | | | | (_| | | (_| | | | | | | | |  __/ | | | | | |_
-#  |_|  |_|  \__,_| |_| |_|  \__,_|  \__, | |_| |_| |_|  \___| |_| |_|  \__|
-#                                     __/ |
-#                                    |___/
-# ----------------------------------------------------------------------------
+    # ----------------------------------------------------------------------------
+    #  __          __                 _      _                             _
+    #  \ \        / /                | |    | |                           | |
+    #   \ \  /\  / /    ___    _ __  | | __ | |__     ___   _ __     ___  | |__
+    #    \ \/  \/ /    / _ \  | '__| | |/ / | '_ \   / _ \ | '_ \   / __| | '_ \
+    #     \  /\  /    | (_) | | |    |   <  | |_) | |  __/ | | | | | (__  | | | |
+    #   __ \/_ \/      \___/  |_|    |_|\_\ |_.__/   \___| |_| |_|  \___| |_| |_|
+    #   __  __                                                              _
+    #  |  \/  |                                                            | |
+    #  | \  / |   __ _   _ __     __ _    __ _   _ __ ___     ___   _ __   | |_
+    #  | |\/| |  / _` | | '_ \   / _` |  / _` | | '_ ` _ \   / _ \ | '_ \  | __|
+    #  | |  | | | (_| | | | | | | (_| | | (_| | | | | | | | |  __/ | | | | | |_
+    #  |_|  |_|  \__,_| |_| |_|  \__,_|  \__, | |_| |_| |_|  \___| |_| |_|  \__|
+    #                                     __/ |
+    #                                    |___/
+    # ----------------------------------------------------------------------------
 
     def load_workbench(self):
         '''
@@ -377,8 +368,8 @@ class my_mainwindow(Ui_MainWindow):
                 old.deleteLater()
                 self.wb_widget = QtWidgets.QWidget()
             device = self.device_comboBox.currentText()
-            class_name = 'my_'+device+'_wb'
-            mod_path = 'wb.'+device+'.'+class_name
+            class_name = ''.join(['my_', device, '_wb'])
+            mod_path = ''.join(['wb.', device, '.', class_name])
             self.dynamic_import(mod_path, class_name)
             wb = getattr(self._module, class_name)()
             self._wb = wb.run_integrated(self)  # self it parent
@@ -400,14 +391,14 @@ class my_mainwindow(Ui_MainWindow):
         self._logger.debug('importing workbench module')
         self._module = __import__(mod_path, fromlist=[class_name])
 
-# -----------------------------------------------------------------------
-#                       __  __   _
-#                      |  \/  | (_)
-#                      | \  / |  _   ___    ___
-#                      | |\/| | | | / __|  / __|
-#                      | |  | | | | \__ \ | (__
-#                      |_|  |_| |_| |___/  \___|
-# -----------------------------------------------------------------------
+    # -----------------------------------------------------------------------
+    #                       __  __   _
+    #                      |  \/  | (_)
+    #                      | \  / |  _   ___    ___
+    #                      | |\/| | | | / __|  / __|
+    #                      | |  | | | | \__ \ | (__
+    #                      |_|  |_| |_| |___/  \___|
+    # -----------------------------------------------------------------------
 
     def find(self):
         """

@@ -1,120 +1,161 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'c:\Users\Samuel\Documents\CodingProjects\Python\in_progress\CNC_TOOLBOX\CNC_TOOLBOX\gui\mainwindow.ui',
-# licensing of 'c:\Users\Samuel\Documents\CodingProjects\Python\in_progress\CNC_TOOLBOX\CNC_TOOLBOX\gui\mainwindow.ui' applies.
-#
-# Created: Sat Apr 11 11:02:08 2020
-#      by: pyside2-uic  running on PySide2 5.13.0
-#
-# WARNING! All changes made in this file will be lost!
+################################################################################
+## Form generated from reading UI file 'mainwindow.ui'
+##
+## Created by: Qt User Interface Compiler version 5.14.1
+##
+## WARNING! All changes made in this file will be lost when recompiling UI file!
+################################################################################
 
-from PySide2 import QtCore, QtGui, QtWidgets
+from PySide2.QtCore import (QCoreApplication, QMetaObject, QObject, QPoint,
+    QRect, QSize, QUrl, Qt)
+from PySide2.QtGui import (QBrush, QColor, QConicalGradient, QCursor, QFont,
+    QFontDatabase, QIcon, QLinearGradient, QPalette, QPainter, QPixmap,
+    QRadialGradient)
+from PySide2.QtWidgets import *
+
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
-        MainWindow.setObjectName("MainWindow")
+        if MainWindow.objectName():
+            MainWindow.setObjectName(u"MainWindow")
         MainWindow.resize(755, 652)
         MainWindow.setDocumentMode(True)
-        self.centralwidget = QtWidgets.QWidget(MainWindow)
-        self.centralwidget.setObjectName("centralwidget")
-        self.cw_gridLayout = QtWidgets.QGridLayout(self.centralwidget)
+        self.actionopen = QAction(MainWindow)
+        self.actionopen.setObjectName(u"actionopen")
+        self.centralwidget = QWidget(MainWindow)
+        self.centralwidget.setObjectName(u"centralwidget")
+        self.cw_gridLayout = QGridLayout(self.centralwidget)
+        self.cw_gridLayout.setObjectName(u"cw_gridLayout")
         self.cw_gridLayout.setContentsMargins(-1, 0, -1, -1)
-        self.cw_gridLayout.setObjectName("cw_gridLayout")
-        self.toolbar_widget = QtWidgets.QWidget(self.centralwidget)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
+        self.placeHolder = QWidget(self.centralwidget)
+        self.placeHolder.setObjectName(u"placeHolder")
+
+        self.cw_gridLayout.addWidget(self.placeHolder, 1, 0, 1, 2)
+
+        self.toolbar_widget = QWidget(self.centralwidget)
+        self.toolbar_widget.setObjectName(u"toolbar_widget")
+        sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.toolbar_widget.sizePolicy().hasHeightForWidth())
         self.toolbar_widget.setSizePolicy(sizePolicy)
-        self.toolbar_widget.setMinimumSize(QtCore.QSize(0, 0))
-        self.toolbar_widget.setObjectName("toolbar_widget")
-        self.gridLayout_6 = QtWidgets.QGridLayout(self.toolbar_widget)
-        self.gridLayout_6.setContentsMargins(0, 0, 0, 0)
-        self.gridLayout_6.setObjectName("gridLayout_6")
-        self.device_comboBox = QtWidgets.QComboBox(self.toolbar_widget)
-        self.device_comboBox.setMinimumSize(QtCore.QSize(150, 0))
-        self.device_comboBox.setObjectName("device_comboBox")
+        self.toolbar_widget.setMinimumSize(QSize(0, 0))
+        self.gridLayout_6 = QGridLayout(self.toolbar_widget)
+        self.gridLayout_6.setObjectName(u"gridLayout_6")
+        self.device_comboBox = QComboBox(self.toolbar_widget)
+        self.device_comboBox.setObjectName(u"device_comboBox")
+        self.device_comboBox.setMinimumSize(QSize(150, 0))
+
         self.gridLayout_6.addWidget(self.device_comboBox, 0, 1, 1, 1)
-        self.copy_radio = QtWidgets.QRadioButton(self.toolbar_widget)
+
+        self.copy_radio = QRadioButton(self.toolbar_widget)
+        self.copy_radio.setObjectName(u"copy_radio")
         self.copy_radio.setCheckable(True)
         self.copy_radio.setChecked(True)
         self.copy_radio.setAutoExclusive(True)
-        self.copy_radio.setObjectName("copy_radio")
+
         self.gridLayout_6.addWidget(self.copy_radio, 0, 4, 1, 1)
-        self.overwrite_radio = QtWidgets.QRadioButton(self.toolbar_widget)
-        self.overwrite_radio.setObjectName("overwrite_radio")
+
+        self.overwrite_radio = QRadioButton(self.toolbar_widget)
+        self.overwrite_radio.setObjectName(u"overwrite_radio")
+
         self.gridLayout_6.addWidget(self.overwrite_radio, 0, 3, 1, 1)
-        self.device_label = QtWidgets.QLabel(self.toolbar_widget)
-        self.device_label.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
-        self.device_label.setObjectName("device_label")
+
+        self.device_label = QLabel(self.toolbar_widget)
+        self.device_label.setObjectName(u"device_label")
+        self.device_label.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+
         self.gridLayout_6.addWidget(self.device_label, 0, 0, 1, 1)
-        spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
-        self.gridLayout_6.addItem(spacerItem, 0, 2, 1, 1)
+
+        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.gridLayout_6.addItem(self.horizontalSpacer, 0, 2, 1, 1)
+
+
         self.cw_gridLayout.addWidget(self.toolbar_widget, 0, 0, 1, 2)
-        self.placeHolder = QtWidgets.QWidget(self.centralwidget)
-        self.placeHolder.setObjectName("placeHolder")
-        self.cw_gridLayout.addWidget(self.placeHolder, 1, 0, 1, 2)
+
+        self.findReplaceWidget = QWidget(self.centralwidget)
+        self.findReplaceWidget.setObjectName(u"findReplaceWidget")
+        self.gridLayout = QGridLayout(self.findReplaceWidget)
+        self.gridLayout.setObjectName(u"gridLayout")
+        self.horizontalSpacer_3 = QSpacerItem(30, 20, QSizePolicy.Fixed, QSizePolicy.Minimum)
+
+        self.gridLayout.addItem(self.horizontalSpacer_3, 2, 0, 1, 1)
+
+        self.find_pushButton = QPushButton(self.findReplaceWidget)
+        self.find_pushButton.setObjectName(u"find_pushButton")
+
+        self.gridLayout.addWidget(self.find_pushButton, 2, 3, 1, 1)
+
+        self.find_lineEdit = QLineEdit(self.findReplaceWidget)
+        self.find_lineEdit.setObjectName(u"find_lineEdit")
+
+        self.gridLayout.addWidget(self.find_lineEdit, 2, 1, 1, 1)
+
+        self.replace_pushButton = QPushButton(self.findReplaceWidget)
+        self.replace_pushButton.setObjectName(u"replace_pushButton")
+
+        self.gridLayout.addWidget(self.replace_pushButton, 2, 4, 1, 1)
+
+        self.horizontalSpacer_2 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.gridLayout.addItem(self.horizontalSpacer_2, 2, 6, 1, 1)
+
+        self.replace_lineEdit = QLineEdit(self.findReplaceWidget)
+        self.replace_lineEdit.setObjectName(u"replace_lineEdit")
+
+        self.gridLayout.addWidget(self.replace_lineEdit, 2, 2, 1, 1)
+
+        self.hideButton = QToolButton(self.findReplaceWidget)
+        self.hideButton.setObjectName(u"hideButton")
+        self.hideButton.setIconSize(QSize(16, 16))
+        self.hideButton.setToolButtonStyle(Qt.ToolButtonTextOnly)
+
+        self.gridLayout.addWidget(self.hideButton, 2, 5, 1, 1)
+
+
+        self.cw_gridLayout.addWidget(self.findReplaceWidget, 2, 0, 1, 2)
+
         MainWindow.setCentralWidget(self.centralwidget)
-        self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 755, 26))
-        self.menubar.setObjectName("menubar")
+        self.menubar = QMenuBar(MainWindow)
+        self.menubar.setObjectName(u"menubar")
+        self.menubar.setGeometry(QRect(0, 0, 755, 26))
         MainWindow.setMenuBar(self.menubar)
-        self.statusbar = QtWidgets.QStatusBar(MainWindow)
+        self.statusbar = QStatusBar(MainWindow)
+        self.statusbar.setObjectName(u"statusbar")
         self.statusbar.setSizeGripEnabled(False)
-        self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
-        self.fnd_dockWidget = QtWidgets.QDockWidget(MainWindow)
-        self.fnd_dockWidget.setFloating(False)
-        self.fnd_dockWidget.setFeatures(QtWidgets.QDockWidget.DockWidgetClosable)
-        self.fnd_dockWidget.setAllowedAreas(QtCore.Qt.BottomDockWidgetArea|QtCore.Qt.TopDockWidgetArea)
-        self.fnd_dockWidget.setWindowTitle("")
-        self.fnd_dockWidget.setObjectName("fnd_dockWidget")
-        self.dockWidgetContents_2 = QtWidgets.QWidget()
-        self.dockWidgetContents_2.setObjectName("dockWidgetContents_2")
-        self.gridLayout_4 = QtWidgets.QGridLayout(self.dockWidgetContents_2)
-        self.gridLayout_4.setObjectName("gridLayout_4")
-        self.replace_lineEdit = QtWidgets.QLineEdit(self.dockWidgetContents_2)
-        self.replace_lineEdit.setObjectName("replace_lineEdit")
-        self.gridLayout_4.addWidget(self.replace_lineEdit, 0, 1, 1, 1)
-        self.find_pushButton = QtWidgets.QPushButton(self.dockWidgetContents_2)
-        self.find_pushButton.setObjectName("find_pushButton")
-        self.gridLayout_4.addWidget(self.find_pushButton, 0, 2, 1, 1)
-        self.replace_pushButton = QtWidgets.QPushButton(self.dockWidgetContents_2)
-        self.replace_pushButton.setObjectName("replace_pushButton")
-        self.gridLayout_4.addWidget(self.replace_pushButton, 0, 3, 1, 1)
-        self.find_lineEdit = QtWidgets.QLineEdit(self.dockWidgetContents_2)
-        self.find_lineEdit.setObjectName("find_lineEdit")
-        self.gridLayout_4.addWidget(self.find_lineEdit, 0, 0, 1, 1)
-        self.fnd_dockWidget.setWidget(self.dockWidgetContents_2)
-        MainWindow.addDockWidget(QtCore.Qt.DockWidgetArea(8), self.fnd_dockWidget)
-        self.toolBar = QtWidgets.QToolBar(MainWindow)
-        self.toolBar.setObjectName("toolBar")
-        MainWindow.addToolBar(QtCore.Qt.TopToolBarArea, self.toolBar)
-        self.actionopen = QtWidgets.QAction(MainWindow)
-        self.actionopen.setObjectName("actionopen")
+        self.toolBar = QToolBar(MainWindow)
+        self.toolBar.setObjectName(u"toolBar")
+        self.toolBar.setMovable(False)
+        self.toolBar.setFloatable(False)
+        MainWindow.addToolBar(Qt.TopToolBarArea, self.toolBar)
+        self.bottomToolBar = QToolBar(MainWindow)
+        self.bottomToolBar.setObjectName(u"bottomToolBar")
+        self.bottomToolBar.setMovable(False)
+        self.bottomToolBar.setToolButtonStyle(Qt.ToolButtonIconOnly)
+        self.bottomToolBar.setFloatable(False)
+        MainWindow.addToolBar(Qt.BottomToolBarArea, self.bottomToolBar)
 
         self.retranslateUi(MainWindow)
-        QtCore.QMetaObject.connectSlotsByName(MainWindow)
+
+        QMetaObject.connectSlotsByName(MainWindow)
+    # setupUi
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(QtWidgets.QApplication.translate("MainWindow", "MainWindow", None, -1))
-        self.copy_radio.setText(QtWidgets.QApplication.translate("MainWindow", "copy", None, -1))
-        self.overwrite_radio.setText(QtWidgets.QApplication.translate("MainWindow", "overwrite", None, -1))
-        self.device_label.setText(QtWidgets.QApplication.translate("MainWindow", "device", None, -1))
-        self.replace_lineEdit.setPlaceholderText(QtWidgets.QApplication.translate("MainWindow", "Replace", None, -1))
-        self.find_pushButton.setText(QtWidgets.QApplication.translate("MainWindow", "Find", None, -1))
-        self.replace_pushButton.setText(QtWidgets.QApplication.translate("MainWindow", "Replace", None, -1))
-        self.find_lineEdit.setPlaceholderText(QtWidgets.QApplication.translate("MainWindow", "Find", None, -1))
-        self.toolBar.setWindowTitle(QtWidgets.QApplication.translate("MainWindow", "toolBar", None, -1))
-        self.actionopen.setText(QtWidgets.QApplication.translate("MainWindow", "open", None, -1))
-
-
-if __name__ == "__main__":
-    import sys
-    app = QtWidgets.QApplication(sys.argv)
-    MainWindow = QtWidgets.QMainWindow()
-    ui = Ui_MainWindow()
-    ui.setupUi(MainWindow)
-    MainWindow.show()
-    sys.exit(app.exec_())
+        MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"MainWindow", None))
+        self.actionopen.setText(QCoreApplication.translate("MainWindow", u"open", None))
+        self.copy_radio.setText(QCoreApplication.translate("MainWindow", u"copy", None))
+        self.overwrite_radio.setText(QCoreApplication.translate("MainWindow", u"overwrite", None))
+        self.device_label.setText(QCoreApplication.translate("MainWindow", u"device", None))
+        self.find_pushButton.setText(QCoreApplication.translate("MainWindow", u"Find", None))
+        self.find_lineEdit.setPlaceholderText(QCoreApplication.translate("MainWindow", u"Find", None))
+        self.replace_pushButton.setText(QCoreApplication.translate("MainWindow", u"Replace", None))
+        self.replace_lineEdit.setPlaceholderText(QCoreApplication.translate("MainWindow", u"Replace", None))
+        self.hideButton.setText(QCoreApplication.translate("MainWindow", u"X", None))
+        self.toolBar.setWindowTitle(QCoreApplication.translate("MainWindow", u"toolBar", None))
+        self.bottomToolBar.setWindowTitle(QCoreApplication.translate("MainWindow", u"findReplaceWidget", None))
+    # retranslateUi
 

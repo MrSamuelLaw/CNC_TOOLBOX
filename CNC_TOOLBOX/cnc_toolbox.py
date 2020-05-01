@@ -37,7 +37,7 @@ def main():
         with open(pipe, 'a') as p:
             for arg in argv[1:]:
                 if os.path.isfile(arg):
-                    p.write(str(arg)+'\n')
+                    p.write(str(arg) + '\n')
 
     # run the cmd
     subprocess.run(cmd)
