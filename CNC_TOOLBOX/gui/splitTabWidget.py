@@ -15,21 +15,27 @@ class splitViewTabWidget(QtWidgets.QWidget):
     """
     splitViewTabWidget consists of two tabWidgets in a split view
     also includes functions that make document management and drag
-    and drop easy to implement
+    and drop easy to implement.
+    One thing coders will noticeis the lack of function calls,
+    this is due to the need for speed in dynamic ui.
+    Function calls in python are expensive in terms of memory and time
+    thus this widget uses as few of them as possible
 
-    self.twd[<side>] gives access to the tabWidgets
+    self.twd[<side>] gives access to the tabWidgets:
+        options for <side> are "left" or "right"
+        note: short for tabWidgetDict
 
     self.tabDict keeps track of a tabs _id and count
 
-    never access _currentItem directly, use getPlainTextEdit instead
+    never access self._currentItem directly, use getPlainTextEdit instead
     """
 
     def __init__(self, parent=None):
         super(splitViewTabWidget, self).__init__(parent)
-        self._logger = logging.getLogger('log')
+        self.logger = logging.getLogger('log')
         self.signals = splitViewTabWidget_signals()
 
-        # tabWidgets
+        # setup tabwidgets
         self.twd = {
             'left': QtWidgets.QTabWidget(self),
             'right': QtWidgets.QTabWidget(self)
@@ -69,7 +75,7 @@ class splitViewTabWidget(QtWidgets.QWidget):
         self.twd['left'].tabBar().installEventFilter(self)
         self.twd['right'].tabBar().installEventFilter(self)
 
-        # set filter functions
+        # set event filter function calls
         self._filterDict = {
             self.twd['left'].tabBar(): self._tabBarEventFilter,
             self.twd['right'].tabBar(): self._tabBarEventFilter
@@ -83,19 +89,34 @@ class splitViewTabWidget(QtWidgets.QWidget):
         self.layout.addWidget(self.VSplit)
 
     def openTextDocument(self, title, text='', side='left', filepath=None):
+        """
+        checks if a document is already open on the requested side, if so
+        it does nothing, if not, it opens the document on that side.
+
+        args:
+            title:
+                will be used the documents _id
+            text:
+                text to be inserted into the tab
+            side:
+                which tabWidget to open the document in
+            filepath:
+                path to associate with the tab
+        """
+
         # if files are already open somewhere
-        self._logger.debug('opening document')
+        self.logger.debug('opening document')
         _id = title
         _id_flag = False
         for key in self.twd.keys():  # iterate through the side
             for i in range(self.twd[key].count()):  # iterate through tabs
                 if self.twd[key].widget(i)._id == _id:  # check ids
                     if key == side:  # is document already open on this side?
-                        self._logger.debug(
+                        self.logger.debug(
                             'failed, document alread open on this side')
                         return  # if so break early
                     else:
-                        self._logger.debug('attempting to open on other side')
+                        self.logger.debug('attempting to open on other side')
                         _id_flag = True
 
         # create new document
@@ -127,13 +148,21 @@ class splitViewTabWidget(QtWidgets.QWidget):
         self._filterDict[plainTextEdit] = self._tabFilter
         # add to tabWidget
         self.twd[side].addTab(plainTextEdit, title)
+        # move view to new tab
+        self.twd[side].setCurrentWidget(plainTextEdit)
         # set current widget and emit _id
         self._currentItem = plainTextEdit
         self.signals.focusChanged.emit(self._currentItem._id)
-        self._logger.debug('successfully opened document')
+        self.logger.debug('successfully opened document')
 
     def closeTab(self, index=None):
-        self._logger.debug('closing tab')
+        """
+        closes a tab, if it is the last of
+        a shared document, it performs garbage cleanup.
+        can be called when the tabCloseRequested signal is emitted
+        """
+
+        self.logger.debug('closing tab')
         # determin sender
         for side in self.twd.keys():
             if bool(self.twd[side].sender()):
@@ -164,29 +193,41 @@ class splitViewTabWidget(QtWidgets.QWidget):
     def getItemInfo(self, _id):
         """
         used to get plainTextEdit's underlying
-        document and path. To get the plainTextEdit
-        its self, use the _currentItem attribute
+        document and path.
 
         returns a dict with the following
         properties
         {
-            _id, also the tab title
-            doc, the underlying document that allows
+            _id: also the tab title
+            doc: the underlying document that allows
                  synced text between tabs
-            path, the documents file path
-            count, how many open tabs have the same documents
+            path: the documents file path
+            count: how many open tabs have the same documents
         }
         """
         return self.tabDict[_id]
 
     def getPlainTextEdit(self, _id):
+        """
+        takes an _id and returns
+        associated plainTextEdit if it exists
+        raises ValueError if id is not valid
+        """
+
         for tabWidget in self.twd.values():
             for i in range(tabWidget.count()):
                 plainTextEdit = tabWidget.widget(i)
                 if plainTextEdit._id == _id:
                     return plainTextEdit
+        raise ValueError("invalid _id")
 
     def updateItem(self, old_id, new_id):
+        """
+        takes an id and updates it, used
+        for files that have been saved under a new
+        name.
+        """
+
         for tabWidget in self.twd.values():
             for i in range(tabWidget.count()):
                 widget = tabWidget.widget(i)
@@ -198,6 +239,16 @@ class splitViewTabWidget(QtWidgets.QWidget):
         self.signals.focusChanged.emit(new_id)
 
     def _tabClicked(self, index):
+        """
+        called when the tabBarClicked signal is emitted
+        so the splitTabWidget can know which document
+        should have focus
+
+        args:
+            index:
+                position of tab clicked
+        """
+
         # determin sender
         for side in self.twd.keys():
             if bool(self.twd[side].sender()):
@@ -206,17 +257,32 @@ class splitViewTabWidget(QtWidgets.QWidget):
                 self.signals.focusChanged.emit(self._clickedTab._id)
 
     def _eventFilter(self, Object, event):
+        """
+        event handler that uses the Object
+        to call the correct function
+        from the _functionDict
+        """
+
         try:  # checks for key errors
             self._filterDict[Object](Object, event)
         except KeyError:
             pass
-        return False
+        return False  # necessary to prevent errors in QEvent chain
 
     def _tabBarEventFilter(self, Object, event):
+        """
+        handles drag and drop functionality
+        for the splitViewTabWidget
+
+        note* do NOT split into seperate functions, that would
+        cause additional overhead for what is essentally
+        a fancy sorter
+        """
+
         # DRAGGING
         if event.type() == QtCore.QEvent.MouseMove:
-            gp = self.mapFromGlobal(event.globalPos())
-            p = event.pos()
+            gp = self.mapFromGlobal(event.globalPos())  # global point
+            p = event.pos()  # local point
             if not self.twd['right'].isHidden():
                 # HIGHLIGHT DROP ZONES
                 if ((self.twd['left'].geometry().contains(gp)) and
@@ -227,7 +293,7 @@ class splitViewTabWidget(QtWidgets.QWidget):
                     self._canDropRight()
                 else:
                     self._normal()
-            # if right widget is hidden
+            # if right tabWidget is hidden
             else:
                 # if it's in the right tenth of the screen
                 if ((p.x() > self.twd['left'].width()*0.9) and
@@ -303,10 +369,13 @@ class splitViewTabWidget(QtWidgets.QWidget):
 
     # TABBAR STATES
     def _normal(self):
+        """set everything to default colors"""
         self.twd['left'].setStyleSheet('')
         self.twd['right'].setStyleSheet('')
 
     def _canDropLeft(self):
+        """set left drop zone to grey"""
+
         self.twd['left'].setStyleSheet("""
             QTabBar {
                  background: #727272
@@ -315,6 +384,8 @@ class splitViewTabWidget(QtWidgets.QWidget):
         self.twd['right'].setStyleSheet('')
 
     def _canDropRight(self):
+        """set right dropzone to grey"""
+
         self.twd['right'].setStyleSheet("""
             QTabBar {
                  background: #727272
@@ -342,7 +413,7 @@ class splitViewTabWidget(QtWidgets.QWidget):
         """
         clear text while preserving the plainTextEdit's undo stack
         """
-        self._logger.info('clearing text')
+        self.logger.info('clearing text')
         # create a instance of a Q cursor with text doc as parent
         curs = QtGui.QTextCursor(self._currentItem.document())
         # select all the content

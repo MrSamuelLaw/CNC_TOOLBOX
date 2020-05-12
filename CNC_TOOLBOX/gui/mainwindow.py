@@ -34,48 +34,6 @@ class Ui_MainWindow(object):
 
         self.cw_gridLayout.addWidget(self.placeHolder, 1, 0, 1, 2)
 
-        self.toolbar_widget = QWidget(self.centralwidget)
-        self.toolbar_widget.setObjectName(u"toolbar_widget")
-        sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.toolbar_widget.sizePolicy().hasHeightForWidth())
-        self.toolbar_widget.setSizePolicy(sizePolicy)
-        self.toolbar_widget.setMinimumSize(QSize(0, 0))
-        self.gridLayout_6 = QGridLayout(self.toolbar_widget)
-        self.gridLayout_6.setObjectName(u"gridLayout_6")
-        self.device_comboBox = QComboBox(self.toolbar_widget)
-        self.device_comboBox.setObjectName(u"device_comboBox")
-        self.device_comboBox.setMinimumSize(QSize(150, 0))
-
-        self.gridLayout_6.addWidget(self.device_comboBox, 0, 1, 1, 1)
-
-        self.copy_radio = QRadioButton(self.toolbar_widget)
-        self.copy_radio.setObjectName(u"copy_radio")
-        self.copy_radio.setCheckable(True)
-        self.copy_radio.setChecked(True)
-        self.copy_radio.setAutoExclusive(True)
-
-        self.gridLayout_6.addWidget(self.copy_radio, 0, 4, 1, 1)
-
-        self.overwrite_radio = QRadioButton(self.toolbar_widget)
-        self.overwrite_radio.setObjectName(u"overwrite_radio")
-
-        self.gridLayout_6.addWidget(self.overwrite_radio, 0, 3, 1, 1)
-
-        self.device_label = QLabel(self.toolbar_widget)
-        self.device_label.setObjectName(u"device_label")
-        self.device_label.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
-
-        self.gridLayout_6.addWidget(self.device_label, 0, 0, 1, 1)
-
-        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
-
-        self.gridLayout_6.addItem(self.horizontalSpacer, 0, 2, 1, 1)
-
-
-        self.cw_gridLayout.addWidget(self.toolbar_widget, 0, 0, 1, 2)
-
         self.findReplaceWidget = QWidget(self.centralwidget)
         self.findReplaceWidget.setObjectName(u"findReplaceWidget")
         self.gridLayout = QGridLayout(self.findReplaceWidget)
@@ -118,6 +76,48 @@ class Ui_MainWindow(object):
 
         self.cw_gridLayout.addWidget(self.findReplaceWidget, 2, 0, 1, 2)
 
+        self.toolbarWidget = QWidget(self.centralwidget)
+        self.toolbarWidget.setObjectName(u"toolbarWidget")
+        sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.toolbarWidget.sizePolicy().hasHeightForWidth())
+        self.toolbarWidget.setSizePolicy(sizePolicy)
+        self.toolbarWidget.setMinimumSize(QSize(0, 0))
+        self.gridLayout_6 = QGridLayout(self.toolbarWidget)
+        self.gridLayout_6.setObjectName(u"gridLayout_6")
+        self.device_comboBox = QComboBox(self.toolbarWidget)
+        self.device_comboBox.setObjectName(u"device_comboBox")
+        self.device_comboBox.setMinimumSize(QSize(150, 0))
+
+        self.gridLayout_6.addWidget(self.device_comboBox, 0, 1, 1, 1)
+
+        self.copy_radioButton = QRadioButton(self.toolbarWidget)
+        self.copy_radioButton.setObjectName(u"copy_radioButton")
+        self.copy_radioButton.setCheckable(True)
+        self.copy_radioButton.setChecked(True)
+        self.copy_radioButton.setAutoExclusive(True)
+
+        self.gridLayout_6.addWidget(self.copy_radioButton, 0, 4, 1, 1)
+
+        self.overwrite_radioButton = QRadioButton(self.toolbarWidget)
+        self.overwrite_radioButton.setObjectName(u"overwrite_radioButton")
+
+        self.gridLayout_6.addWidget(self.overwrite_radioButton, 0, 3, 1, 1)
+
+        self.device_label = QLabel(self.toolbarWidget)
+        self.device_label.setObjectName(u"device_label")
+        self.device_label.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+
+        self.gridLayout_6.addWidget(self.device_label, 0, 0, 1, 1)
+
+        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.gridLayout_6.addItem(self.horizontalSpacer, 0, 2, 1, 1)
+
+
+        self.cw_gridLayout.addWidget(self.toolbarWidget, 0, 0, 1, 2)
+
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
@@ -147,14 +147,14 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"MainWindow", None))
         self.actionopen.setText(QCoreApplication.translate("MainWindow", u"open", None))
-        self.copy_radio.setText(QCoreApplication.translate("MainWindow", u"copy", None))
-        self.overwrite_radio.setText(QCoreApplication.translate("MainWindow", u"overwrite", None))
-        self.device_label.setText(QCoreApplication.translate("MainWindow", u"device", None))
         self.find_pushButton.setText(QCoreApplication.translate("MainWindow", u"Find", None))
         self.find_lineEdit.setPlaceholderText(QCoreApplication.translate("MainWindow", u"Find", None))
         self.replace_pushButton.setText(QCoreApplication.translate("MainWindow", u"Replace", None))
         self.replace_lineEdit.setPlaceholderText(QCoreApplication.translate("MainWindow", u"Replace", None))
         self.hideButton.setText(QCoreApplication.translate("MainWindow", u"X", None))
+        self.copy_radioButton.setText(QCoreApplication.translate("MainWindow", u"copy", None))
+        self.overwrite_radioButton.setText(QCoreApplication.translate("MainWindow", u"overwrite", None))
+        self.device_label.setText(QCoreApplication.translate("MainWindow", u"device", None))
         self.toolBar.setWindowTitle(QCoreApplication.translate("MainWindow", u"toolBar", None))
         self.bottomToolBar.setWindowTitle(QCoreApplication.translate("MainWindow", u"findReplaceWidget", None))
     # retranslateUi

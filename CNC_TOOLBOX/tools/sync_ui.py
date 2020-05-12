@@ -7,6 +7,11 @@ from glob import glob
 
 
 def sync():
+    """
+    finds all .ui files and calls PySide2-uic on them
+    which converts them to .py files
+    """
+
     ext = '*.ui'
     files = []
     start_dir = os.getcwd()

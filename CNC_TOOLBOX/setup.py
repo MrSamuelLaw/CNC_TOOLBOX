@@ -25,6 +25,7 @@ def linux_extra_sauce():
     """
     adds the linux distros necessary for copy and paste functionality
     """
+
     linux_dependencies = [
             'xclip',
             'xsel'
@@ -46,6 +47,7 @@ def install_packages():
     install gscrape.py as global. It's the heart of CNC toolbox that allows
     text to be turned into organized lists.
     """
+
     if site.ENABLE_USER_SITE:
         dst = site.USER_SITE
         cwd = os.path.dirname(os.path.realpath(sys.argv[0]))
@@ -67,13 +69,15 @@ def main():
     """
     setup global enviroment for cnc_toolbox to run properly
     """
+
     if int(sys.version[0]) == 3:  # make sure python3 is being used
         # put in dependencies
         dependencies = [
             'setuptools',
             'PySide2==5.14.0',
             'pyperclip',
-            'tendo'
+            'tendo',
+            'matplotlib'
         ]
         for d in dependencies:
             try:  # if not met install it

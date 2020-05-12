@@ -1,2 +1,12 @@
-INFO:func __init__:Line 66:setting up mainwindow
-INFO:func __init__:Line 129:finished setting up mainwindow
+INFO:func __init__:Line 124:setting up mainwindow
+INFO:func __init__:Line 147:finished setting up mainwindow
+INFO:func open:Line 329:opening blank tab
+INFO:func set_current_document_id:Line 289:current item is document1
+INFO:func open:Line 329:opening blank tab
+INFO:func set_current_document_id:Line 289:current item is document2
+INFO:func set_current_document_id:Line 289:current item is document2
+INFO:func set_current_document_id:Line 289:current item is document2
+INFO:func set_current_document_id:Line 289:current item is document2
+INFO:func set_current_document_id:Line 289:current item is document2
+INFO:func set_current_document_id:Line 289:current item is document1
+INFO:func set_current_document_id:Line 289:current item is document1

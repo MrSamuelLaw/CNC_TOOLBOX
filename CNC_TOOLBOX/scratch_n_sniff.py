@@ -7,7 +7,9 @@ from subprocess import run
 
 """
 finds tests by iterating through and finding all folders
-labeled test
+labeled test. WILL stop on breakpoint() and turn the terminal
+into an interactive debugger.
+
 cwd = where the user files are located
       that test files are testing
 """

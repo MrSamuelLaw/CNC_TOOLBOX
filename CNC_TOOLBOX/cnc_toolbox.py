@@ -8,9 +8,14 @@ import logging
 from sys import argv
 
 
-def main():
+def launch():
     """
-    launch an instance of CNC_TOOLBOX
+    The purpose of the cnc_toolbox module is to be a
+    cross platform launcher for the cnc_toolbox application.
+
+    This script MUST be able to compile to exe for windows,
+    as solidworks cam and other applications will only
+    automatically pass files to exe.
     """
 
     # set up logger
@@ -22,6 +27,7 @@ def main():
     if platform.system() == 'Windows':
         logger.debug('platform is windows')
         cmd.append('pythonw')  # pythonw suppresses terminal
+        # cmd.append('./.venv/Scripts/pythonw')  # pythonw suppresses terminal
     elif platform.system() == 'Linux':
         logger.debug('platform is linux')
         cmd.append('python3')
@@ -44,4 +50,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    launch()
