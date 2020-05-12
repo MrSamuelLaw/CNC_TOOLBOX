@@ -1,0 +1,5 @@
+setuptools
+PySide2==5.14.0
+pyperclip
+tendo
+matplotlib
