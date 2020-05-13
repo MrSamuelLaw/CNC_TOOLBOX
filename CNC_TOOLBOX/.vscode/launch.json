@@ -17,7 +17,14 @@
             "request": "launch",
             "program": "${workspaceFolder}/cnc_toolbox.py",
             "console": "integratedTerminal"
-        }
+        },
+        {
+            "name": "setup",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/setup.py",
+            "console": "integratedTerminal"
+        },
         {
             "name": "tests",
             "type": "python",

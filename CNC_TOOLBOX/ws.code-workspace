@@ -11,6 +11,7 @@
 		}
 	],
 	"settings": {
-		"pythonTestExplorer.testFramework": "unittest"
+		"pythonTestExplorer.testFramework": "unittest",
+		"python.pythonPath": ".venv\\Scripts\\python.exe"
 	}
 }

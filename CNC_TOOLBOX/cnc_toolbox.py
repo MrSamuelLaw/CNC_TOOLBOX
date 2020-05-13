@@ -18,19 +18,19 @@ def launch():
     automatically pass files to exe.
     """
 
-    # set up logger
-    logger = logging.getLogger('log')
-    logging.basicConfig(level=logging.DEBUG)
+    # update path
+    this_folder = str(os.path.dirname(os.path.realpath(argv[0])))
+    os.chdir(this_folder)
 
     # set cmd list based on operating system
     cmd = list()
     if platform.system() == 'Windows':
-        logger.debug('platform is windows')
-        cmd.append('pythonw')  # pythonw suppresses terminal
-        # cmd.append('./.venv/Scripts/pythonw')  # pythonw suppresses terminal
+        print('platform is windows')
+        # cmd.append('pythonw')  # pythonw suppresses terminal
+        cmd.append('./.venv/Scripts/pythonw')  # pythonw suppresses terminal
     elif platform.system() == 'Linux':
-        logger.debug('platform is linux')
-        cmd.append('python3')
+        print('platform is linux')
+        cmd.append('./.venv/bin/python3')
 
     # account for where program is called from
     folder = str(os.path.dirname(os.path.realpath(argv[0])))
@@ -46,7 +46,9 @@ def launch():
                     p.write(str(arg) + '\n')
 
     # run the cmd
-    subprocess.run(cmd)
+    subprocess.call(cmd)
+    # return_code = subprocess.run(cmd)
+    # print(return_code)
 
 
 if __name__ == "__main__":
