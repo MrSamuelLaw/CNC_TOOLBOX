@@ -1,3 +1,3 @@
 xclip
 xsel
-python{major_ver}.{minor_ver}-venv
+python3-venv
