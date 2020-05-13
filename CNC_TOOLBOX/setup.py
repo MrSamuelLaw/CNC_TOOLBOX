@@ -24,15 +24,13 @@ def setup_windows():
     """
     runs the venv, and requirements setup for windows
     """
-   """
-    runs the venv, and requirements setup for linux
-    """
+
     print("setting up for windows...")
 
     # create virtual enviroment
     print("creating virtual environment...")
     this_dir = str(os.path.dirname(os.path.realpath(sys.argv[0])))
-    cmd = ['python3', '-m', 'venv', '.venv']
+    cmd = ['python', '-m', 'venv', '.venv']
     return_status = subprocess.run(cmd, cwd=this_dir)
     if return_status:
         print(return_status)
@@ -41,7 +39,7 @@ def setup_windows():
 
     # install python packages
     print('installing required python packages...')
-    cmd = ['./.venv/Lib/pip3.exe', 'install', '-r', 'requirements.txt']
+    cmd = ['./.venv/Scripts/pip3.exe', 'install', '-r', 'requirements.txt']
     return_status = subprocess.run(cmd, cwd=this_dir)
     print('packages installed')
 
@@ -67,24 +65,24 @@ def setup_linux():
     print('setting up for linux...')
 
     # get the packages from packages.txt
-    major_ver, minor_ver, *_ = sys.version
+    major_ver = sys.version_info.major
+    minor_ver = sys.version_info.minor
     with open('packages.txt', 'r') as inFile:
         packages = inFile.readlines()
         packages = [x.strip() for x in packages]
-        for i, p in enumerate(packages):
-            if p == 'python{major_ver}.{minor_ver}-venv':
-                packages[i] = p.format(major_ver=major_ver, minor_ver=minor_ver)
+        # for i, p in enumerate(packages):
+        #     if p == 'python{major_ver}.{minor_ver}-venv':
+        #         packages[i] = p.format(major_ver=major_ver, minor_ver=minor_ver)
 
     # ask the user if they want the script to install them
-    print(f"attempting to install the following linux packages:")
+    print("attempting to install the following linux packages:")
     for p in packages:
         print(p)
     print("you may be prompted to enter your password...")
     for p in packages:
-        try:
-            # try to install it
-            p = subprocess.run(['sudo', 'apt-get', 'install', str(p)])
-            print(p)
+        # try to install it
+        p = subprocess.run(['sudo', 'apt-get', 'install', str(p)])
+        print(p)
     # excecption not caught on purpose, we don't want the
     # program to continue if an error occures
     print("finished installing linux packages...")
@@ -109,7 +107,7 @@ def setup_linux():
     print('installing gscrape...')
     src = os.path.join(this_dir, 'packages', 'gscrape.py')
     dst = os.path.join(
-        this_dir, '.venv', 'lib', f'python{major_ver}.{minor_ver}', 'site-packages'
+        this_dir, '.venv', 'lib', 'python{}.{}'.format(major_ver, minor_ver), 'site-packages'
     )
     try:
         shutil.copy(src, dst)
@@ -124,7 +122,7 @@ def main():
     setup global enviroment for cnc_toolbox to run properly
     """
 
-    if int(sys.version[0]) == 3:  # make sure python3 is being used
+    if int(sys.version_info.major) == 3:  # make sure python3 is being used
         if platform.system() == 'Linux':
             setup_linux()
         elif platform.system() == 'Windows':
