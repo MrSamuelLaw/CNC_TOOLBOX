@@ -20,43 +20,36 @@ import subprocess
 import shutil
 
 
-def linux_extra_sauce():
+def setup_windows():
     """
-    installs the necessary linux packages to allow
-    python packages to install correctly
+    runs the venv, and requirements setup for windows
     """
-
-    major_ver, minor_ver, *_ = sys.version
-
-    linux_dependencies = [
-        'xclip',
-        'xsel',
-        f'python{major_ver}.{minor_ver}-venv'
-    ]
-    for d in linux_dependencies:
-        try:
-            # check if package exists
-            p = subprocess.run(["which", str(d)])
-            if p.returncode:
-                try:
-                    # try to install it
-                    p = subprocess.run(['sudo', 'apt-get', 'install', str(d)])
-                except Exception as e:
-                    print(e)
-        except Exception as e:
-            print(e)
-
-
-def install_packages(install_path=None):
+   """
+    runs the venv, and requirements setup for linux
     """
-    "install" (really just copy) gscrape.py. It's the heart of CNC toolbox that allows
-    text to be turned into organized lists.
-    """
+    print("setting up for windows...")
 
-    print('installing gscrape...')
+    # create virtual enviroment
+    print("creating virtual environment...")
     this_dir = str(os.path.dirname(os.path.realpath(sys.argv[0])))
-    dst = install_path
+    cmd = ['python3', '-m', 'venv', '.venv']
+    return_status = subprocess.run(cmd, cwd=this_dir)
+    if return_status:
+        print(return_status)
+    elif not return_status:
+        print('virtual enviroment created!')
+
+    # install python packages
+    print('installing required python packages...')
+    cmd = ['./.venv/Lib/pip3.exe', 'install', '-r', 'requirements.txt']
+    return_status = subprocess.run(cmd, cwd=this_dir)
+    print('packages installed')
+
+    # install gscrape
+    print('installing gscrape...')
     src = os.path.join(this_dir, 'packages', 'gscrape.py')
+    dst = os.path.join(
+        this_dir, '.venv', 'Lib', 'site-packages')
     try:
         shutil.copy(src, dst)
     except Exception as e:
@@ -65,67 +58,65 @@ def install_packages(install_path=None):
         print('gscrape installed successfully!')
 
 
-def create_venv(cmd=None):
+def setup_linux():
     """
-    create a virtual enviroment for all the dependecies to be
-    installed on
+    runs the venv, and requirements setup for linux
     """
 
+    # install linux dependencies
+    print('setting up for linux...')
+
+    # get the packages from packages.txt
+    major_ver, minor_ver, *_ = sys.version
+    with open('packages.txt', 'r') as inFile:
+        packages = inFile.readlines()
+        packages = [x.strip() for x in packages]
+        for i, p in enumerate(packages):
+            if p == 'python{major_ver}.{minor_ver}-venv':
+                packages[i] = p.format(major_ver=major_ver, minor_ver=minor_ver)
+
+    # ask the user if they want the script to install them
+    print(f"attempting to install the following linux packages:")
+    for p in packages:
+        print(p)
+    print("you may be prompted to enter your password...")
+    for p in packages:
+        try:
+            # try to install it
+            p = subprocess.run(['sudo', 'apt-get', 'install', str(p)])
+            print(p)
+    # excecption not caught on purpose, we don't want the
+    # program to continue if an error occures
+    print("finished installing linux packages...")
+
+    # create virtual enviroment
+    print("creating virtual environment...")
     this_dir = str(os.path.dirname(os.path.realpath(sys.argv[0])))
-
+    cmd = ['python3', '-m', 'venv', '.venv']
     return_status = subprocess.run(cmd, cwd=this_dir)
     if return_status:
         print(return_status)
     elif not return_status:
         print('virtual enviroment created!')
 
-
-def setup_windows():
-    """
-    runs the venv, and requirements setup for windows
-    """
-    print('setting up for windows...')
-
-    create_venv(cmd=['python', '-m', 'venv', '.venv'])
-
-    # install in dependencies
-    print('installing required packages...')
-    this_dir = str(os.path.dirname(os.path.realpath(sys.argv[0])))
-    cmd = ['./.venv/Scripts/pip3.exe', 'install', '-r', 'requirements.txt']
-    return_status = subprocess.run(cmd, cwd=this_dir)
-    print('packages installed with return stats:', return_status)
-
-    # install gscrape
-    dst = os.path.join(this_dir, '.venv', 'Lib', 'site-packages')
-    install_packages(install_path=dst)
-
-
-def setup_linux():
-    """
-    runs the venv, and requirements setup for windows
-    """
-    print('setting up for linux...')
-
-    linux_extra_sauce()
-    create_venv(cmd=['python3', '-m', 'venv', '.venv'])
-
-    # install in dependencies
-    print('installing required packages...')
-    this_dir = str(os.path.dirname(os.path.realpath(sys.argv[0])))
+    # install python packages
+    print('installing required python packages...')
     cmd = ['./.venv/bin/pip3', 'install', '-r', 'requirements.txt']
     return_status = subprocess.run(cmd, cwd=this_dir)
-    print('packages installed with the following status:', return_status)
+    print('packages installed')
 
     # install gscrape
-    major_ver, minor_ver, *_ = sys.version
+    print('installing gscrape...')
+    src = os.path.join(this_dir, 'packages', 'gscrape.py')
     dst = os.path.join(
-        this_dir,
-        '.venv',
-        'lib',
-        f'python{major_ver}.{minor_ver}',
-        'site-packages'
+        this_dir, '.venv', 'lib', f'python{major_ver}.{minor_ver}', 'site-packages'
     )
-    install_packages(install_path=dst)
+    try:
+        shutil.copy(src, dst)
+    except Exception as e:
+        print(e)
+    else:
+        print('gscrape installed successfully!')
 
 
 def main():
