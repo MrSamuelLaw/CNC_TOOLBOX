@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
 
+"""
+===================================
+DEPRECIATED!!!, please use rs_274.py instead
+===================================
+"""
+
 
 class gscrape():
     '''a gcode scraper that performs common functions
@@ -123,6 +129,12 @@ class gscrape():
         return text
 
     def insert_line(self, gcode, text, lnum):
+        """
+        args:
+            gcode: sorted_gcode list
+            text: string line of gcode
+            lnum: int line at which to insert text line
+        """
         # parse text
         text = self.sort_gcode(text)
         gcode = self._sequence(gcode)

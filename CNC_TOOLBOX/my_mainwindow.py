@@ -303,7 +303,7 @@ class my_mainwindow(Ui_MainWindow):
             tf = files[0]
             self.open(filepath=tf)
 
-    def open(self, filepath=None):
+    def open(self, filepath=None, title=None):
         """
         opens a new tab in the splitViewTabWidget
 
@@ -325,6 +325,9 @@ class my_mainwindow(Ui_MainWindow):
                     contents,
                     filepath=filepath
                 )
+        elif title is not None:
+            self.splitView.openTextDocument(title)
+
         else:
             self.logger.info('opening blank tab')
             self.splitView.openTextDocument(f'document{self.doc_count}')

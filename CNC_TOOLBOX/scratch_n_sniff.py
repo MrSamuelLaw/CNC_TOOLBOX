@@ -15,10 +15,26 @@ cwd = where the user files are located
 """
 
 start_dir = getcwd()
+exe_path = path.join(start_dir, '.venv', 'Scripts', 'python.exe')
+
+skips = ['.venv']  # skip tests in these dirs.
 
 for root, dirs, files in walk(start_dir):
     for name in dirs:
-        if name == "test":
+        if (name == "test"):  # loop through and find test files
             test_folder = path.join(root, name)
-            cmd = ['python','-m','unittest','discover','-s',test_folder]
-            results = run(cmd, cwd=root)
+            # make sure tests are not in directories to skip
+            if not any([s for s in skips if s in test_folder]):
+                # cmd parameters
+                cmd = [
+                    # 'python',
+                    exe_path,
+                    '-m',
+                    'unittest',
+                    'discover',
+                    '-s',
+                    test_folder,
+                    # '-v'  # verbose output
+                ]
+                # run cmd
+                results = run(cmd, cwd=root)

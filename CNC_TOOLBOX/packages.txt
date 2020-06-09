@@ -1,3 +1,4 @@
 xclip
 xsel
 python3-venv
+qttools5-dev-tools

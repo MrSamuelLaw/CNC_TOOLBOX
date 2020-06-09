@@ -4,7 +4,6 @@
 import os
 import platform
 import subprocess
-import logging
 from sys import argv
 
 
