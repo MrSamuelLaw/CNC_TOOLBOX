@@ -1,2 +1,7 @@
 INFO:func __init__:Line 124:setting up mainwindow
 INFO:func __init__:Line 147:finished setting up mainwindow
+INFO:func load_workbench:Line 518:loading workbench...
+INFO:func __init__:Line 29:my_sherline_lathe_wb instantiated
+INFO:func run_integrated:Line 43:getting sherline lathe wb ready for parent
+INFO:func load_workbench:Line 540:workbench loaded
+INFO:func __del__:Line 36:my_sherline_lathe_wb deleted

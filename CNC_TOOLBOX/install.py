@@ -17,7 +17,6 @@ import sys
 import os
 import platform as pf
 import subprocess
-import shutil
 
 
 def install_linux_packages(platform: str):
@@ -50,31 +49,24 @@ def install_linux_packages(platform: str):
 def create_virtual_enviroment(platform: str, path: str):
     # WINDOWS
     if platform == 'Windows':
-        print("creating virtual environment...")
         cmd = ['python', '-m', 'venv', '.venv']
-        try:
-            return_status = subprocess.run(cmd, cwd=path)
-        except Exception as e:
-            print(e, '\n', return_status)
-            return
-        else:
-            print(return_status)
-            print('virtual enviroment created!')
 
     # LINUX
     elif platform == 'Linux':
-        print("creating virtual environment...")
         cmd = ['python3', '-m', 'venv', '.venv']
-        try:
-            return_status = subprocess.run(cmd, cwd=path)
-        except Exception as e:
-            print(e, '\n', return_status)
-        else:
-            print(return_status)
-            print('virtual enviroment created!')
+
     # NOT LINUX OR WINDOWS
     else:
         raise ValueError(f'{platform} is not "Windows" or "Linux"')
+
+    print("creating virtual environment...")
+    try:
+        return_status = subprocess.run(cmd, cwd=path)
+    except Exception as e:
+        print(e, '\n', return_status)
+    else:
+        print(return_status)
+        print('virtual enviroment created!')
 
 
 def install_python_packages(platform: str, path: str):
@@ -91,79 +83,27 @@ def install_python_packages(platform: str, path: str):
 
     # WINDOWS
     if platform == 'Windows':
-        print('installing required python packages...')
-        # cmd = ['./.venv/Scripts/pip3.exe', 'install', '-r', 'requirements.txt']
-        try:
-            for req in requirements:
-                cmd = ['./.venv/Scripts/pip3.exe', 'install', '-r', req]
-                return_status = subprocess.run(cmd, cwd=path)
-        except Exception as e:
-            print(e, '\n', return_status)
-            return
-        else:
-            print('packages installed')
+        exe = './.venv/Scripts/pip3.exe'
+
     # LINUX
     elif platform == 'Linux':
-        print('installing required python packages...')
-        try:
-            for req in requirements:
-                cmd = ['./.venv/bin/pip3', 'install', '-r', req]
-                return_status = subprocess.run(cmd, cwd=path)
-        except Exception as e:
-            print(e, '\n', return_status)
-        else:
-            print('packages installed')
+        exe = './.venv/bin/pip3'
+
     # NOT LINUX OR WINDOWS
     else:
         raise ValueError(f'{platform} is not "Windows or "Linux"')
 
-
-def install_gparse(platform: str, path: str):
-    # WINDOWS
-    if platform == "Windows":
-        print('installing gparse...')
-        src_dir = os.path.join(path, 'packages', 'gparse')
-        files = os.listdir(src_dir)
-        dst = os.path.join(path, '.venv', 'Lib', 'site-packages', 'gparse')
-        src = [os.path.join(src_dir, f) for f in files if (f != '__init__.py') and (os.path.isfile(f))]
-        try:
-            os.mkdir(dst)
-        except FileExistsError:
-            pass
-
-        try:
-            for s in src:
-                shutil.copy(s, dst)
-        except Exception as e:
-            print(e)
-            return
-        else:
-            print('gparse installed successfully!')
-    # LINUX
-    elif platform == "Linux":
-        print('installing gparse...')
-        major_ver = sys.version_info.major
-        minor_ver = sys.version_info.minor
-        src_dir = os.path.join(path, 'packages', 'gparse')
-        files = os.listdir(src_dir)
-        dst = os.path.join(
-            path, '.venv', 'lib', 'python{}.{}'.format(major_ver, minor_ver), 'site-packages'
-        )
-        src = [os.path.join(src_dir, f) for f in files if (f != '__init__.py') and (os.path.isfile(f))]
-        try:
-            os.mkdir(dst)
-        except FileExistsError:
-            pass
-
-        try:
-            shutil.copy(src, dst)
-        except Exception as e:
-            print(e)
-        else:
-            print('gparse installed successfully!')
-    # NOT WINDOWS OR LINUX
+    print('installing required python packages...')
+    try:
+        for req in requirements:
+            cmd = [exe, 'install', '-r', req]
+            return_status = subprocess.run(cmd, cwd=path)
+        cmd = [exe, 'install', './packages']
+        return_status = subprocess.run(cmd, cwd=path)
+    except Exception as e:
+        print(e, '\n', return_status)
     else:
-        raise ValueError(f'{platform} is not "Windows" or "Linux"')
+        print('packages installed')
 
 
 def setup():
@@ -183,9 +123,6 @@ def setup():
 
     # install python packages
     install_python_packages(platform, this_dir)
-
-    # install gscrape
-    install_gparse(platform, this_dir)
 
 
 def main():

@@ -221,6 +221,8 @@ class rs274():
             text: string line of gcode
             lnum: int line at which to insert text line
         """
+        if not text.strip():
+            return gcode
         # parse text
         text = self.parse_gcode(text)
         gcode = self._sequence(gcode)

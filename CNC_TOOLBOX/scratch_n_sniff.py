@@ -18,6 +18,7 @@ start_dir = getcwd()
 exe_path = path.join(start_dir, '.venv', 'Scripts', 'python.exe')
 
 skips = ['.venv']  # skip tests in these dirs.
+onlys = ['shop_bot']  # if not empty, will run only these test folders
 
 for root, dirs, files in walk(start_dir):
     for name in dirs:
@@ -25,7 +26,8 @@ for root, dirs, files in walk(start_dir):
             test_folder = path.join(root, name)
             # make sure tests are not in directories to skip
             if not any([s for s in skips if s in test_folder]):
-                # cmd parameters
+                if onlys and not any([o for o in onlys if o in test_folder]):
+                    continue
                 cmd = [
                     # 'python',
                     exe_path,
