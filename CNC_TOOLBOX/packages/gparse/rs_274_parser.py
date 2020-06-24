@@ -5,7 +5,7 @@ from math import nan
 from collections import deque
 
 
-class rs274():
+class rs274Parser():
     '''
     A parser that takes rs274 gcode and generates a list
     with nested sublist with the following format
@@ -233,7 +233,7 @@ class rs274():
                 index = i
                 break
         # NOT LAST INDEX BRANCH
-        if index != gcode[-1][2]:
+        if index != gcode.index(gcode[-1]):
             # shift everything at that index up
             for x in gcode[index:]:
                 x[2] += 1

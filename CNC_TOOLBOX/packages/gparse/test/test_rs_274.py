@@ -2,7 +2,7 @@
 
 
 import unittest
-from rs_274 import rs274
+from rs_274_parser import rs274Parser
 from cProfile import Profile
 from pstats import Stats
 
@@ -10,7 +10,7 @@ from pstats import Stats
 class test_rs274(unittest.TestCase):
 
     def setUp(self):
-        self.parser = rs274()
+        self.parser = rs274Parser()
 
     def load_file(self):
         with open('test/ring.nc', 'r') as infile:

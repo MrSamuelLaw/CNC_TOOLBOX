@@ -289,6 +289,7 @@ class my_mainwindow(Ui_MainWindow):
         self.logger.info(f'current item is {_id}')
         self._current_document_id = _id
         self.set_statusbar_right_text(_id)
+        self.get_current_plainTextEdit().setFocus()
 
     def browse(self):
         """

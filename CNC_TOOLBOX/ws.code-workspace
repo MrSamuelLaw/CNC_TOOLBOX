@@ -8,6 +8,9 @@
 		},
 		{
 			"path": "./wb/shop_bot"
+		},
+		{
+			"path": "./packages"
 		}
 	],
 	"settings": {

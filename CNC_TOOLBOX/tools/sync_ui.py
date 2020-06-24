@@ -23,3 +23,7 @@ def sync():
         py = f[0:-3]+'.py'
         cmd = ["pyside2-uic", ui, '-o', py]
         subprocess.run(cmd, shell=True)  # shell prevents popup window
+
+
+if __name__ == "__main__":
+    sync()

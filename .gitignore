@@ -2,6 +2,7 @@
 CNC_TOOLBOX/wb/*
 __pycache__
 .log
+.venv
 launch_tester.py
 multi_launch_test.bat
 
