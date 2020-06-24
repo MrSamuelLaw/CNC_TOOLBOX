@@ -64,7 +64,7 @@ class Listener(QtCore.QObject):
             while True:
                 line = pipe.readline().strip()
                 if len(line):
-                    self._signals.heard.emit(line)
+                    self.signals.heard.emit(line)
                 sleep(0.7)
 
 
