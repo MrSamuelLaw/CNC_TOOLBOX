@@ -7,7 +7,7 @@ from cProfile import Profile
 from pstats import Stats
 
 
-class test_rs274(unittest.TestCase):
+class test_rs274Parser(unittest.TestCase):
 
     def setUp(self):
         self.parser = rs274Parser()
@@ -49,7 +49,7 @@ class test_rs274(unittest.TestCase):
         res = '\n'.join(res)
         self.assertEqual(res, good)
 
-    def test_run_profiling(self):
+    def run_profiling(self):
         profiler = Profile()
         text = self.load_file()
         n = 1

@@ -3,6 +3,7 @@
 # ==========================================
 # Author: Samuel Law
 # BUGS: N/A
+# TODO: Refactor _tabFilter
 # ==========================================
 
 
@@ -118,7 +119,7 @@ class splitViewTabWidget(QtWidgets.QWidget):
             # if open on this side, refresh the content
             if self.is_on_side(_id, side):
                 plainTextEdit = self.getPlainTextEdit(_id)
-                plainTextEdit.clearText()
+                plainTextEdit.clearText(plainTextEdit)
                 plainTextEdit.insertPlainText(text)
                 return
         else:
@@ -246,7 +247,10 @@ class splitViewTabWidget(QtWidgets.QWidget):
     def is_on_side(self, _id, side):
         """returns true of false if the tab with
         given _id is open on that side"""
+
+        # gather all the _id's on side passed in
         ids = [self.twd[side].widget(i)._id for i in range(self.twd[side].count())]
+        # return if the passed in _id is in the list
         return (_id in ids)
 
     def getItemInfo(self, _id):
@@ -273,20 +277,14 @@ class splitViewTabWidget(QtWidgets.QWidget):
         raises ValueError if id is not valid
         Exclusivly called by workbench modules
         """
-        # is short for plainTextEdit tab
+        # t is short for plainTextEdit tab
         tabs = [[t.widget(i) for i in range(t.count())] for t in self.twd.values()]
         tabs = chain(*tabs)
-        for plainTextEdit in tabs:  # allow for shortcut
+        # use for loop to allow exit upon match
+        for plainTextEdit in tabs:
             if plainTextEdit._id == _id:
                 return plainTextEdit
         raise ValueError("invalide _id")
-
-        # for tabWidget in self.twd.values():
-        #     for i in range(tabWidget.count()):
-        #         plainTextEdit = tabWidget.widget(i)
-        #         if plainTextEdit._id == _id:
-        #             return plainTextEdit
-        # raise ValueError("invalid _id")
 
     def updateItem(self, old_id, new_id):
         """
@@ -483,13 +481,13 @@ class splitViewTabWidget(QtWidgets.QWidget):
     #                                    |___/
     # ----------------------------------------------------------------------------------
 
-    def clearText(self):
+    def clearText(self, plainTextEdit):
         """
         clear text while preserving the plainTextEdit's undo stack
         """
         self.logger.info('clearing text')
         # create a instance of a Q cursor with text doc as parent
-        curs = QtGui.QTextCursor(self._currentItem.document())
+        curs = QtGui.QTextCursor(plainTextEdit.document())
         # select all the content
         curs.select(QtGui.QTextCursor.Document)
         # delete all the content

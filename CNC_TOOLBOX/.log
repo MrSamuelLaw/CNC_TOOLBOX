@@ -1,26 +1,19 @@
 INFO:func __init__:Line 124:setting up mainwindow
 INFO:func __init__:Line 147:finished setting up mainwindow
+INFO:func browse:Line 300:opening file browser
+INFO:func open:Line 323:opening Pin2.txt
+INFO:func set_current_document_id:Line 289:current item is Pin2.txt
+INFO:func set_current_document_id:Line 289:current item is Pin2.txt
+INFO:func load_workbench:Line 519:loading workbench...
+INFO:func __init__:Line 33:my_sherline_lathe_wb instantiated
+INFO:func run_integrated:Line 47:getting sherline lathe wb ready for parent
+INFO:func load_workbench:Line 541:workbench loaded
+INFO:func format_file:Line 66:formatting gcode to run on linuxCNC
+INFO:func clearText:Line 490:clearing text
 INFO:func open:Line 333:opening blank tab
 INFO:func set_current_document_id:Line 289:current item is document1
 INFO:func set_current_document_id:Line 289:current item is document1
 INFO:func set_current_document_id:Line 289:current item is document1
-INFO:func open:Line 333:opening blank tab
-INFO:func set_current_document_id:Line 289:current item is document2
-INFO:func set_current_document_id:Line 289:current item is document2
-INFO:func set_current_document_id:Line 289:current item is document2
-INFO:func set_current_document_id:Line 289:current item is document2
-INFO:func set_current_document_id:Line 289:current item is document2
-INFO:func set_current_document_id:Line 289:current item is document1
-INFO:func set_current_document_id:Line 289:current item is document1
-INFO:func set_current_document_id:Line 289:current item is document1
-INFO:func set_current_document_id:Line 289:current item is document2
-INFO:func set_current_document_id:Line 289:current item is document1
-INFO:func set_current_document_id:Line 289:current item is document1
-INFO:func set_current_document_id:Line 289:current item is document1
-INFO:func set_current_document_id:Line 289:current item is document1
-INFO:func set_current_document_id:Line 289:current item is document2
-INFO:func set_current_document_id:Line 289:current item is document2
-INFO:func set_current_document_id:Line 289:current item is document2
-INFO:func set_current_document_id:Line 289:current item is document2
-INFO:func set_current_document_id:Line 289:current item is document2
-INFO:func set_current_document_id:Line 289:current item is document2
+INFO:func set_current_document_id:Line 289:current item is Pin2.txt
+INFO:func set_current_document_id:Line 289:current item is Pin2.txt
+INFO:func __del__:Line 40:my_sherline_lathe_wb deleted

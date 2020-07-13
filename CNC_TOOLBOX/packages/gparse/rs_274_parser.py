@@ -3,6 +3,7 @@
 from math import isnan
 from math import nan
 from collections import deque
+from itertools import groupby, chain
 
 
 class rs274Parser():
@@ -185,20 +186,12 @@ class rs274Parser():
         """
         # make sure it's in order
         gcode.sort(key=lambda x: x[2])
-        # group by matches
-        line, text = deque(), deque()
-        for i, x in enumerate(gcode[1:]):
-            # SAME LINE BRANCH
-            if x[2] == gcode[i][2]:
-                line.append(gcode[i][0])
-            # NEW LINE BRANCH
-            else:
-                line.append(gcode[i][0])
-                text.append(' '.join(line))
-                line = deque()
-        line.append(x[0])
-        text.append(' '.join(line))
-        return ('\n'.join(text))
+        # group by line number
+        lines_of_code = deque()
+        for _, group in groupby(gcode, lambda g: g[2]):
+            # combine each cmd in the line with a space
+            lines_of_code.append(' '.join([g[0] for g in group]))
+        return '\n'.join(lines_of_code)
 
     def _sequence(self, gcode):
         """
@@ -238,7 +231,7 @@ class rs274Parser():
             for x in gcode[index:]:
                 x[2] += 1
             # insert at index
-            for x in text:
+            for x in text[::-1]:
                 x[2] = lnum
                 gcode.insert(index, x)
         # LAST INDEX BRANCH
