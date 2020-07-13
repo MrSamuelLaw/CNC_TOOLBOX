@@ -2,7 +2,7 @@
 
 """
 ===================================
-DEPRECIATED!!!, please use rs_274.py instead
+DEPRECIATED!!!, please use rs_274_parser.py instead
 ===================================
 """
 

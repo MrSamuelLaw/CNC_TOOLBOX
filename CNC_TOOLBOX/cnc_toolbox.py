@@ -18,7 +18,7 @@ def launch():
     """
 
     # update path
-    this_folder = str(os.path.dirname(os.path.realpath(argv[0])))
+    this_folder = str(os.path.dirname(__file__))
     os.chdir(this_folder)
 
     # set cmd list based on operating system
@@ -32,7 +32,7 @@ def launch():
         cmd.append('./.venv/bin/python3')
 
     # account for where program is called from
-    folder = str(os.path.dirname(os.path.realpath(argv[0])))
+    folder = str(os.path.dirname(__file__))
     cmd.append(os.path.join(folder, '__main__.py'))
     cmd.append(folder)
 

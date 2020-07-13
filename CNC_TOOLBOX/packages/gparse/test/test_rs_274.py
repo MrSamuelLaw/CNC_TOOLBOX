@@ -49,7 +49,7 @@ class test_rs274(unittest.TestCase):
         res = '\n'.join(res)
         self.assertEqual(res, good)
 
-    def run_profiling(self):
+    def test_run_profiling(self):
         profiler = Profile()
         text = self.load_file()
         n = 1
@@ -61,6 +61,7 @@ class test_rs274(unittest.TestCase):
         stats = Stats(profiler)
         stats.strip_dirs()
         stats.sort_stats('cumulative')
+        print("="*20)
         stats.print_stats()
 
     def test_to_text(self):

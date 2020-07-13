@@ -16,5 +16,9 @@
 	"settings": {
 		"pythonTestExplorer.testFramework": "unittest",
 		"python.pythonPath": ".venv\\Scripts\\python.exe"
-	}
+	},
+	"files.associations":
+    {
+        "*.config": "json"
+    }
 }

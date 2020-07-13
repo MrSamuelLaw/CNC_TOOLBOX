@@ -323,7 +323,7 @@ class my_mainwindow(Ui_MainWindow):
                 self.logger.info(f'opening {title}')
                 self.splitView.openTextDocument(
                     title,
-                    contents,
+                    text=contents,
                     filepath=filepath
                 )
         elif title is not None:

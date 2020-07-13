@@ -134,7 +134,7 @@ class rs274Parser():
                             buff += item
                         else:
                             raise ValueError(
-                                'two sequentail characters found not in code'
+                                f'two or more sequential chars found on line {lnum}'
                             )
 
                     # COMMENT BRANCH

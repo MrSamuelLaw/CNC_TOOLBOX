@@ -12,5 +12,8 @@
     "python.testing.nosetestsEnabled": false,
     "pythonTestExplorer.testFramework": "unittest",
     "python.linting.flake8Enabled": true,
-
+    "files.associations":
+    {
+        "*.config": "json"
+    }
 }
