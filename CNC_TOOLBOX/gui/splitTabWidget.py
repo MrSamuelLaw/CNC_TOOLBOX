@@ -1,7 +1,13 @@
 #!/usr/bin/env python3
 
+# ==========================================
+# Author: Samuel Law
+# BUGS: N/A
+# ==========================================
+
 
 from PySide2 import QtWidgets, QtCore, QtGui
+from itertools import chain
 import logging
 
 
@@ -90,8 +96,8 @@ class splitViewTabWidget(QtWidgets.QWidget):
 
     def openTextDocument(self, title, text='', side='left', filepath=None):
         """
-        checks if a document is already open on the requested side, if so
-        it does nothing, if not, it opens the document on that side.
+        Opens a new document on the left hand side. If the document is
+        already open, it refreshes the document content
 
         args:
             title:
@@ -104,26 +110,19 @@ class splitViewTabWidget(QtWidgets.QWidget):
                 path to associate with the tab
         """
 
-        # if files are already open somewhere
         self.logger.debug('opening document')
         _id = title
-        _id_flag = False
-        for key in self.twd.keys():  # iterate through the side
-            for i in range(self.twd[key].count()):  # iterate through tabs
-                if self.twd[key].widget(i)._id == _id:  # check ids
-                    if key == side:  # is document already open on this side?
-                        self.logger.debug(
-                            'failed, document alread open on this side')
-                        return  # if so break early
-                    else:
-                        self.logger.debug('attempting to open on other side')
-                        _id_flag = True
 
-        # create new document
-        if _id_flag:
-            document = self.tabDict[_id]['doc']
-            self.tabDict[_id]['count'] += 1
+        # check if open at all
+        if self.tabDict.get(_id, None):
+            # if open on this side, refresh the content
+            if self.is_on_side(_id, side):
+                plainTextEdit = self.getPlainTextEdit(_id)
+                plainTextEdit.clearText()
+                plainTextEdit.insertPlainText(text)
+                return
         else:
+            # if it's not open at all, create a new document
             document = QtGui.QTextDocument()
             document.setDocumentLayout(
                 QtWidgets.QPlainTextDocumentLayout(document)
@@ -147,7 +146,41 @@ class splitViewTabWidget(QtWidgets.QWidget):
         plainTextEdit.installEventFilter(self)
         self._filterDict[plainTextEdit] = self._tabFilter
         # add to tabWidget
-        self.twd[side].addTab(plainTextEdit, title)
+        self.twd[side].addTab(plainTextEdit, _id)
+        # move view to new tab
+        self.twd[side].setCurrentWidget(plainTextEdit)
+        # set current widget and emit _id
+        self._currentItem = plainTextEdit
+        self.signals.focusChanged.emit(self._currentItem._id)
+        self.logger.debug('successfully opened document')
+
+    def copyTextDocument(self, _id, side, force=False):
+        """Handles tab copy requests as they attepmt to
+        open on each tabwidget"""
+
+        self.logger.debug("copying document")
+        # if open on this side, pass
+        if self.is_on_side(_id, side) and (not force):
+            return
+
+        # else, open it on the other side
+        self.tabDict[_id]['count'] += 1
+        # give document to plainTextEdit
+        plainTextEdit = QtWidgets.QPlainTextEdit()
+        plainTextEdit.setDocument(self.tabDict[_id]['doc'])
+        # move cursor to the top of the docuement
+        plainTextEdit.moveCursor(QtGui.QTextCursor.Start)
+        plainTextEdit.ensureCursorVisible()
+        # assign _id
+        plainTextEdit._id = _id
+        # assign addtional functionality
+        plainTextEdit.clearText = self.clearText
+        plainTextEdit.setAcceptDrops(False)
+        # install event filters
+        plainTextEdit.installEventFilter(self)
+        self._filterDict[plainTextEdit] = self._tabFilter
+        # add to tabWidget
+        self.twd[side].addTab(plainTextEdit, _id)
         # move view to new tab
         self.twd[side].setCurrentWidget(plainTextEdit)
         # set current widget and emit _id
@@ -190,6 +223,32 @@ class splitViewTabWidget(QtWidgets.QWidget):
                     )
                     self.twd['right'].hide()
 
+                # if it was the last tab on the left side
+                if (side == 'left') and (self.twd['left'].count() == 1):
+                    self.moveTabsLeft()
+
+    def moveTabsLeft(self):
+        """moves tabs from the right widget to the left"""
+        for i in range(self.twd['right'].count()):
+            # get the widget
+            widget = self.twd['right'].widget(i)
+            # open it on the left side
+            self.copyTextDocument(widget._id, side='left', force=True)
+            # delete it
+            widget.deleteLater()
+        # update focus
+        self.signals.focusChanged.emit(
+            self.twd['right'].currentWidget()._id
+        )
+        # hade the widget
+        self.twd['right'].hide()
+
+    def is_on_side(self, _id, side):
+        """returns true of false if the tab with
+        given _id is open on that side"""
+        ids = [self.twd[side].widget(i)._id for i in range(self.twd[side].count())]
+        return (_id in ids)
+
     def getItemInfo(self, _id):
         """
         used to get plainTextEdit's underlying
@@ -209,17 +268,25 @@ class splitViewTabWidget(QtWidgets.QWidget):
 
     def getPlainTextEdit(self, _id):
         """
-        takes an _id and returns
+        Takes an _id and returns
         associated plainTextEdit if it exists
         raises ValueError if id is not valid
+        Exclusivly called by workbench modules
         """
+        # is short for plainTextEdit tab
+        tabs = [[t.widget(i) for i in range(t.count())] for t in self.twd.values()]
+        tabs = chain(*tabs)
+        for plainTextEdit in tabs:  # allow for shortcut
+            if plainTextEdit._id == _id:
+                return plainTextEdit
+        raise ValueError("invalide _id")
 
-        for tabWidget in self.twd.values():
-            for i in range(tabWidget.count()):
-                plainTextEdit = tabWidget.widget(i)
-                if plainTextEdit._id == _id:
-                    return plainTextEdit
-        raise ValueError("invalid _id")
+        # for tabWidget in self.twd.values():
+        #     for i in range(tabWidget.count()):
+        #         plainTextEdit = tabWidget.widget(i)
+        #         if plainTextEdit._id == _id:
+        #             return plainTextEdit
+        # raise ValueError("invalid _id")
 
     def updateItem(self, old_id, new_id):
         """
@@ -237,6 +304,13 @@ class splitViewTabWidget(QtWidgets.QWidget):
         self.tabDict[new_id] = self.tabDict[old_id]
         del self.tabDict[old_id]
         self.signals.focusChanged.emit(new_id)
+
+    #  ______                          _     ______   _   _   _
+    # |  ____|                        | |   |  ____| (_) | | | |
+    # | |__    __   __   ___   _ __   | |_  | |__     _  | | | |_    ___   _ __   ___
+    # |  __|   \ \ / /  / _ \ | '_ \  | __| |  __|   | | | | | __|  / _ \ | '__| / __|
+    # | |____   \ V /  |  __/ | | | | | |_  | |      | | | | | |_  |  __/ | |    \__ \
+    # |______|   \_/    \___| |_| |_|  \__| |_|      |_| |_|  \__|  \___| |_|    |___/
 
     def _tabClicked(self, index):
         """
@@ -324,7 +398,7 @@ class splitViewTabWidget(QtWidgets.QWidget):
                         # get the widget id and
                         _id = self._clickedTab._id
                         # attempt to open it on the otherside
-                        self.openTextDocument(_id)
+                        self.copyTextDocument(_id, side='left')
 
                 # DROPPED IN THE RIGHT WIDGET
                 elif self.twd['right'].geometry().contains(gp):
@@ -340,7 +414,7 @@ class splitViewTabWidget(QtWidgets.QWidget):
                         # get the widget id and
                         _id = self._clickedTab._id
                         # attempt to open it on the otherside
-                        self.openTextDocument(_id, side='right')
+                        self.copyTextDocument(_id, side='right')
                     # if left count is zero, move everything to the left widget
                     if not self.twd['left'].count():
                         while self.twd['right'].count() > 0:
