@@ -13,7 +13,7 @@ NOTE, this project will be under active maintenence until CNC_TOOLBOX_2 is relea
 # Workbench
  There are several reasons that a workbench based design was adopted.
   - The workbench concept allows machine programmers to create tools specific to their workflow using Python.
-  - The workbenches are loaded at runtime, and deleted upon changing to different workbench, keeping memory footprint light and 
+  - The workbenches are loaded at runtime, and deleted upon changing to different workbench, keeping the memory footprint light and 
     the application running fast, even on lighter weight machines.
   - The workbench design pattern allows for a layer of abstraction allowing workbenches to be tested in isolation from the 
     rest of the program
