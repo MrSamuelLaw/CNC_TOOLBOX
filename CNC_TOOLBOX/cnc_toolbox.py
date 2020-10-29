@@ -5,6 +5,7 @@ import os
 import platform
 import subprocess
 from sys import argv
+from pathlib import PurePath
 
 
 def launch():
@@ -18,7 +19,7 @@ def launch():
     """
 
     # update path
-    this_folder = str(os.path.dirname(__file__))
+    this_folder = PurePath(__file__).parent
     os.chdir(this_folder)
 
     # set cmd list based on operating system
@@ -32,9 +33,8 @@ def launch():
         cmd.append('./.venv/bin/python3')
 
     # account for where program is called from
-    folder = str(os.path.dirname(__file__))
-    cmd.append(os.path.join(folder, '__main__.py'))
-    cmd.append(folder)
+    cmd.append(this_folder.joinpath('__main__.py'))
+    cmd.append(this_folder)
 
     # send cmdline arguments to pipe
     if len(argv) > 1:
