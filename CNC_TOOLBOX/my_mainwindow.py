@@ -1,258 +1,613 @@
 #!/usr/bin/env python
 
-from gui.mainwindow import *
-from PySide2.QtWidgets import QFileDialog
-from os import path
-from collections import deque
-from platform import system
-import os
-import sys
 import logging
+import os
+import threading
+from time import sleep
+from PySide2 import QtCore, QtGui, QtWidgets
+from gui.mainwindow import Ui_MainWindow
+from gui.splitTabWidget import splitViewTabWidget
+
+
+# -------------------------------------------------------
+#   _        _         _
+#  | |      (_)       | |
+#  | |       _   ___  | |_    ___   _ __     ___   _ __
+#  | |      | | / __| | __|  / _ \ | '_ \   / _ \ | '__|
+#  | |____  | | \__ \ | |_  |  __/ | | | | |  __/ | |
+#  |______| |_| |___/  \__|  \___| |_| |_|  \___| |_|
+# -------------------------------------------------------
+
+
+class ListenerSignals(QtCore.QObject):
+    """
+    signals for the listener thread
+
+    protected attributes
+        _heard: a QtCore.Signal that emits a python str
+    """
+
+    heard = QtCore.Signal(str)
+
+
+class Listener(QtCore.QObject):
+    """
+    class that runs on a seperate thread in order to process
+    file open requests from cnc_toolbox.py and cnc_toolbox.exe
+
+    public functions:
+        run():
+            starts a thread that runs for the life of the mainwindow
+            that processes file open requests that come from seperate
+            processes.
+
+        signals:
+            heard.emit(str): emits line from pipe if available
+    """
+
+    def __init__(self):
+        """
+        creates a logger and adds signals through
+        composition
+        """
+
+        self.logger = logging.getLogger('log')
+        self.signals = ListenerSignals()
+
+    def run(self):
+        """
+        listens to the .pipe for opening files to
+        open
+        """
+
+        with open('.pipe', 'r') as pipe:
+            while True:
+                line = pipe.readline().strip()
+                if len(line):
+                    self.signals.heard.emit(line)
+                sleep(0.7)
+
+
+# -----------------------------------------------------------------------------------
+#                       _                      _               _
+#                      (_)                    (_)             | |
+#   _ __ ___     __ _   _   _ __   __      __  _   _ __     __| |   ___   __      __
+#  | '_ ` _ \   / _` | | | | '_ \  \ \ /\ / / | | | '_ \   / _` |  / _ \  \ \ /\ / /
+#  | | | | | | | (_| | | | | | | |  \ V  V /  | | | | | | | (_| | | (_) |  \ V  V /
+#  |_| |_| |_|  \__,_| |_| |_| |_|   \_/\_/   |_| |_| |_|  \__,_|  \___/    \_/\_/
+# ------------------------------------------------------------------------------------
 
 
 class my_mainwindow(Ui_MainWindow):
+    """
+    front end for CNC_TOOLBOX
 
-    _file = None
+    description:
+        my_mainwindow inherites from the auto-generated file mainwindow.py, which itself
+        is generated from mainwindow.ui
+        The purpose of this class is to handle all the base functionality of CNC_TOOLBOX
+        as well as to host submodules in its wb_toolbar.
+
+    ascii art website:
+        http://patorjk.com/software/taag/#p=display&f=Big&t=F%20i%20l%20e%20%20%20%20%20%20H%20a%20n%20d%20l%20i%20n%20g
+
+    class structure
+        due to the many tasks the my_mainwindow handles
+        the functions have been split into catagories defined
+        by ascii block text, here are the brief overviews of the catagories
+        Setup:
+            everything that must be done for the mainwindow to
+            start correctly and called by the __init__ function
+        File Handling:
+            everything related to opening, closing, and saving text
+        Drag&Drop:
+            overwrites drag and drop handling for the central widget,
+            thus allowing files to be dragged, dropped, and opened
+        Workbench Management:
+            everything that has to do with importing, displaying, and
+            memory managing the workbench modules
+        Misc:
+            functions that are not important enough to have their
+            own section, like find and replace, etc...
+    """
+
     _module = None
+    toolbar_padding = 1
 
     def __init__(self, mainwindow):
         """
         set up main window
         """
-        logging.info('setting up mainwindow')
 
+        # set up logger
+        self.logger = logging.getLogger('log')
+        self.logger.info('setting up mainwindow')
+
+        # set up listener
+        self.start_listener_thread()
+        # start document count at zero
+        self.d_count = 0
         # setup to default screen
-        self.setupUi(mainwindow)
-        self.frame.hide()
-        self.fnd_dockWidget.hide()
+        self.customize_mainwindow(mainwindow)
+        # create statusbarWidget at the bottom of the screen
+        self.setup_status_bar(mainwindow)
+        # override drag and drop functions for central widget
+        self.enable_drag_n_drop()
+        # set up toolbars
+        self.setup_toolbars()
+        # setup file menu
+        self.create_file_menu()
+        # connect signals and slots
+        self.connect_signals_and_slots()
+        # setup hotkeys
+        self.assign_hotkeys()
+        # load the wb combo box
+        self.load_device_combobox()
 
-        # add functions
-        self.menubar.addAction("open", self.launch_file_browser)
-        self.menubar.addAction("close", self.close)
-        self.menubar.addAction("save as", self.save_as)
+        self.logger.info('finished setting up mainwindow')
+
+    # -------------------------------------
+    #   _____          _
+    #  / ____|        | |
+    # | (___     ___  | |_   _   _   _ __
+    #  \___ \   / _ \ | __| | | | | | '_ \
+    #  ____) | |  __/ | |_  | |_| | | |_) |
+    # |_____/   \___|  \__|  \__,_| | .__/
+    #                             | |
+    #                             |_|
+    # -------------------------------------
+
+    def start_listener_thread(self):
+        """
+        starts the listener thread to pole the .pipe
+        for file open requests
+        """
+
+        self.listener = Listener()
+        self.listener.signals.heard.connect(self.open)
+        self.thread = threading.Thread(target=self.listener.run)
+        self.thread.daemon = True
+        self.thread.start()
+
+    def customize_mainwindow(self, mainwindow):
+        """
+        customizes the mainwindow in ways that
+        cannot be done in Qt-Designer
+        """
+
+        self.setupUi(mainwindow)
+        self.bottomToolBar.hide()
+        self.splitView = splitViewTabWidget()
+        self.splitView.twd['right'].hide()
+        self.cw_gridLayout.replaceWidget(self.placeHolder, self.splitView)
+
+    def create_file_menu(self):
+        """
+        creates the filemenu located in the top left
+        of the mainwindow
+        """
+
+        self.filemenu = self.menubar.addMenu("file")
+        self.filemenu.addAction("new", self.open)
+        self.filemenu.addAction("open", self.browse)
+        self.filemenu.addAction("save", self.save)
+        self.filemenu.addAction("save as", self.save_as)
+
+    def connect_signals_and_slots(self):
+        """
+        connect QSignals and QSlots
+        """
+
         self.device_comboBox.currentIndexChanged.connect(self.load_workbench)
-        self.save_button.clicked.connect(self.save_file)
         self.find_pushButton.clicked.connect(self.find)
         self.replace_pushButton.clicked.connect(self.replace)
+        self.splitView.signals.focusChanged.connect(self.set_current_document_id)
+        self.hideButton.clicked.connect(self.bottomToolBar.hide)
 
-        # add an additional function to the plainTextEdit
-        #   that preserves the undo stack
-        self.text_area.clearText = self.clearText
+    def assign_hotkeys(self):
+        """
+        assigns and enables hotkeys
+        """
 
-        # insert key bindings
-        s1 = QtWidgets.QShortcut(QtGui.QKeySequence("Ctrl+f"), self.text_area)
-        s1.activated.connect(self.fnd_dockWidget.show)
+        s1 = QtWidgets.QShortcut(QtGui.QKeySequence("Ctrl+f"), self.splitView)
+        s1.activated.connect(self.bottomToolBar.show)
+        s2 = QtWidgets.QShortcut(QtGui.QKeySequence("Ctrl+s"), self.splitView)
+        s2.activated.connect(self.save)
 
-        # load the wb combo box
+    def enable_drag_n_drop(self):
+        """
+        modifies and/or overwrites drag and drop behavior
+        """
+
+        self.centralwidget.setAcceptDrops(True)
+        self.centralwidget.dragEnterEvent = self.dragEnterEvent
+        self.centralwidget.dropEvent = self.dropEvent
+
+    def setup_toolbars(self):
+        """
+        creates the workbench toolbar
+        """
+
+        self.toolBar.addWidget(self.toolbarWidget)
+        self.toolBar.setMinimumHeight(
+            self.toolbarWidget.height() + self.toolbar_padding
+        )
+        self.wb_toolbar = QtWidgets.QToolBar('wb_toolbar')
+        self.wb_widget = None
+        self.bottomToolBar.addWidget(self.findReplaceWidget)
+
+    def load_device_combobox(self):
+        """
+        reads the available devices in the wb folder
+        and loads them into the combo box
+        """
+
         self.device_comboBox.addItem('start menu')
-        self.wb_list = os.listdir(os.getcwd()+'/wb')
+        self.wb_list = os.listdir(os.getcwd() + '/wb')
         for wb in self.wb_list:
             if wb != 'info.txt':
                 self.device_comboBox.addItem(wb)
 
-        # load in a file if passed as command line
-        if len(sys.argv) > 2:
-            if os.path.isfile(sys.argv[2]):
-                try:
-                    self.load_file()
-                except Exception as e:
-                    print(e)
-
-        logging.info('finished setting up mainwindow')
-
-    def load_file(self):
+    def setup_status_bar(self, mainwindow):
         """
-        open a file and puts its contents in the text area
+        adds a label to the bottom right status bar
         """
-        self._file = sys.argv[2]
-        self.file_field.setText(str(path.basename(self._file)))
-        logging.info(f'loading file {str(path.basename(self._file))}')
-        with open(self._file, 'r') as f:
-            self.text_area.clear()
-            self.text_area.insertPlainText(f.read())
 
-    def launch_file_browser(self):
-        '''
-        launches a an instance of the os's native file browser
-        to load a file into the text area
-        '''
-        logging.info('opening file browser')
-        browser = QFileDialog()
-        # browser.setNameFilter("nc files (*.nc)")  # filter if needed
+        # create status label that self can change
+        self.stat_label = QtWidgets.QLabel('', mainwindow)
+        # add to the right of the mainwindow
+        mainwindow.statusBar().addPermanentWidget(self.stat_label)
+
+    # ---------------------------------------------------------------------------------------
+    #   ______   _   _               _    _                       _   _   _
+    #  |  ____| (_) | |             | |  | |                     | | | | (_)
+    #  | |__     _  | |   ___       | |__| |   __ _   _ __     __| | | |  _   _ __     __ _
+    #  |  __|   | | | |  / _ \      |  __  |  / _` | | '_ \   / _` | | | | | | '_ \   / _` |
+    #  | |      | | | | |  __/      | |  | | | (_| | | | | | | (_| | | | | | | | | | | (_| |
+    #  |_|      |_| |_|  \___|      |_|  |_|  \__,_| |_| |_|  \__,_| |_| |_| |_| |_|  \__, |
+    #                                                                                  __/ |
+    #                                                                                 |___/
+    # ---------------------------------------------------------------------------------------
+
+    def get_current_plainTextEdit(self):
+        """
+        returns the currently active document's plainTextEdit
+        """
+
+        return self.splitView.getPlainTextEdit(
+            self._current_document_id
+        )
+
+    def set_current_document_id(self, _id):
+        """
+        catches the current item _id emitted
+        by the splitViewTabWidget
+        the _id is how the
+        splitViewTabWidget is able to find items
+        """
+
+        self.logger.info(f'current item is {_id}')
+        self._current_document_id = _id
+        self.set_statusbar_right_text(_id)
+        self.get_current_plainTextEdit().setFocus()
+
+    def browse(self):
+        """
+        opens a file browser to select a file using
+        the operating systems native file browser
+        """
+
+        self.logger.info('opening file browser')
+        browser = QtWidgets.QFileDialog()
         if browser.exec_():
             files = browser.selectedFiles()
-            self._file = files[0]
-            self.file_field.setText(str(path.basename(self._file)))
-            with open(self._file, 'r') as f:
-                self.text_area.clear()
-                self.text_area.insertPlainText(f.read())
+            tf = files[0]
+            self.open(filepath=tf)
 
-    def close(self):
+    def open(self, filepath=None, title=None):
         """
-        close current file and wipe its contenst from the screen
+        opens a new tab in the splitViewTabWidget
+
+        args:
+            filepath
+                if=None, simply opens a new tab
+                if != None, reads file contents onto new tab
         """
-        self._file = None
-        self.file_field.clear()
-        self.text_area.clear()
-        self.file_field.setText('no file selected')
-        logging.info('file closed')
+
+        if filepath is not None:
+            # put the contents on a new tab
+            with open(filepath, 'r') as c:
+                contents = c.read()
+                # set the tab title
+                title = os.path.basename(filepath)
+                self.logger.info(f'opening {title}')
+                self.splitView.openTextDocument(
+                    title,
+                    text=contents,
+                    filepath=filepath
+                )
+        elif title is not None:
+            self.splitView.openTextDocument(title)
+
+        else:
+            self.logger.info('opening blank tab')
+            self.splitView.openTextDocument(f'document{self.doc_count}')
+
+    def close(self, index=None):
+        """
+        calls the closeTab method of the splitViewTabWidget to
+        close the current tab.
+        """
+
+        self.splitView.closeTab()
+
+    def save(self):
+        """
+        saves the tabs contents
+        if there is a path associated with file implements
+        save copy or save overwrite methods
+        if there is no path, falls through to save as method
+        """
+
+        item_info = self.splitView.getItemInfo(
+            self._current_document_id
+        )
+        if item_info['path'] is None:
+            self.save_as()
+        elif self.copy_radioButton.isChecked():
+            self.save_copy()
+        elif self.overwrite_radioButton.isChecked():
+            self.save_overwrite()
+
+    def save_overwrite(self):
+        """
+        overwrites the contents of a file with the text
+        in the current tab, iff there is a path associated
+        with the tab, else it calls save_as()
+        """
+
+        self.logger.info('saving file')
+        item_info = self.splitView.getItemInfo(
+            self._current_document_id
+        )
+        contents = str(item_info['doc'].toPlainText())
+        with open(item_info['path'], 'w') as f:
+            f.write(contents)
+
+    def save_copy(self):
+        """
+        saves the contents of the current tab as a copy
+        with a modified name iff there is a path associated
+        with the tab, else it calls save_as()
+        """
+
+        self.logger.info('saving file copy')
+        item_info = self.splitView.getItemInfo(
+            self._current_document_id
+        )
+        contents = item_info['doc'].toPlainText()
+        file_name = 'copy_' + os.path.basename(item_info['path'])
+        dirpath = os.path.dirname(item_info['path'])
+        with open(os.path.join(dirpath, file_name), 'w') as f:
+            f.write(contents)
 
     def save_as(self):
         """
-        save the current contents to a new file
+        save the current contents to a new file using
+        a save as dialog window
         """
-        logging.info('saving file as')
-        browser = QFileDialog()
-        # patch to allow the save as to work on linux
-        if system() == 'Linux':
-            options = QFileDialog.Options()
-            options |= QFileDialog.DontUseNativeDialog
-            options |= QFileDialog.DontUseCustomDirectoryIcons
-            browser.setLabelText(QtWidgets.QFileDialog.Accept, 'Save')
-            browser.setOptions(options)
+
+        self.logger.info('saving file as')
+        browser = QtWidgets.QFileDialog()
+
+        # optional settings that allow consistent saving accross platforms
+        options = browser.Options()
+        options |= browser.DontUseNativeDialog
+        options |= browser.DontUseCustomDirectoryIcons
+        browser.setLabelText(browser.Accept, 'Save')
+        browser.setOptions(options)
+
         if browser.exec_():
-            files = browser.selectedFiles()
-            self._file = files[0]
-            self.file_field.setText(str(path.basename(self._file)))
-            with open(self._file, 'w') as f:
-                f.write(self.text_area.toPlainText())
-        logging.info('file saved')
+            # get the path that you just created
+            File, *_ = browser.selectedFiles()
 
-    def save_file(self):
+            # get the document associated with tab that has Focus
+            item_info = self.splitView.getItemInfo(self._current_document_id)
+
+            # get the file path
+            item_info['path'] = File
+            item_info['id'] = str(os.path.basename(File))
+
+            # update item _id and title
+            self.splitView.updateItem(
+                self._current_document_id,
+                item_info['id']
+            )
+            self._current_document_id = item_info['id']
+
+            # write contents to file
+            with open(File, 'w') as f:
+                content = str(item_info['doc'].toPlainText())
+                f.write(content)
+
+            self.logger.info(f'{File} saved')
+
+    # --------------------------------------------------------------------------
+    #   _____                                    _____
+    #  |  __ \                           ___    |  __ \
+    #  | |  | |  _ __    __ _    __ _   ( _ )   | |  | |  _ __    ___    _ __
+    #  | |  | | | '__|  / _` |  / _` |  / _ \/\ | |  | | | '__|  / _ \  | '_ \
+    #  | |__| | | |    | (_| | | (_| | | (_>  < | |__| | | |    | (_) | | |_) |
+    #  |_____/  |_|     \__,_|  \__, |  \___/\/ |_____/  |_|     \___/  | .__/
+    #                            __/ |                                  | |
+    #                           |___/                                   |_|
+    # ---------------------------------------------------------------------------
+
+    def dragEnterEvent(self, event):
         """
-        save current file
+        filters drag events to facilitate
+        drag and drop functionality
+
+        args: event
+            QEvent created by the PySide2 API
         """
-        if self._file is not None:
-            file = self._file
-            if self.save_copy.isChecked():
-                folder = path.dirname(file)
-                file_name = 'fixed_'+path.basename(file)
-                file = folder+'/'+file_name
-                with open(file, 'w+') as f:
-                    f.write(self.text_area.toPlainText())
-            else:
-                with open(file, 'w+') as f:
-                    f.write(self.text_area.toPlainText())
 
-        else:
-            self.save_as()
-        logging.info('file saved')
+        # check if item being dragged in has a path or not
+        self.logger.debug('dragEnterEvent detected')
+        if event.mimeData().hasUrls():
+            event.accept()  # if has path, allow drops
 
-    def load_workbench(self):
-        '''
-        dynamically import a workbench from the wb folder.
-        '''
-        logging.info('loading workbench')
-        if self.device_comboBox.currentIndex() == 0:
-            # reset frame if no device selected
-            if self.frame.layout() is not None:
-                # clear all the widgets out of frame so
-                # they don't stay in memory
-                self.del_all_in_layout(self.frame.layout())
-                # que the layout for deletion since it will not
-                # be needed since we are returning to
-                # the start menu
-                self.frame.layout().deleteLater()
-                self.frame.hide()
-                self._wb = None
+    def dropEvent(self, event):
+        """
+        filters drop events to facilitate
+        drag and drop functionality
+
+        args: event
+            QEvent created by the PySide2 API
+        """
+
+        # if okayed by the dragEnterEvent
+        self.logger.debug('dropEvent detected')
+        for url in event.mimeData().urls():
+            path = str(url.toLocalFile())
+            if os.path.isfile(path):
+                self.open(path)
+
+    # ----------------------------------------------------------------------------
+    #  __          __                 _      _                             _
+    #  \ \        / /                | |    | |                           | |
+    #   \ \  /\  / /    ___    _ __  | | __ | |__     ___   _ __     ___  | |__
+    #    \ \/  \/ /    / _ \  | '__| | |/ / | '_ \   / _ \ | '_ \   / __| | '_ \
+    #     \  /\  /    | (_) | | |    |   <  | |_) | |  __/ | | | | | (__  | | | |
+    #   __ \/_ \/      \___/  |_|    |_|\_\ |_.__/   \___| |_| |_|  \___| |_| |_|
+    #   __  __                                                              _
+    #  |  \/  |                                                            | |
+    #  | \  / |   __ _   _ __     __ _    __ _   _ __ ___     ___   _ __   | |_
+    #  | |\/| |  / _` | | '_ \   / _` |  / _` | | '_ ` _ \   / _ \ | '_ \  | __|
+    #  | |  | | | (_| | | | | | | (_| | | (_| | | | | | | | |  __/ | | | | | |_
+    #  |_|  |_|  \__,_| |_| |_|  \__,_|  \__, | |_| |_| |_|  \___| |_| |_|  \__|
+    #                                     __/ |
+    #                                    |___/
+    # ----------------------------------------------------------------------------
+
+    def load_workbench(self, index):
+        """
+        loads in a workbench when called by the the deviceComboBox's
+        currentItemChanged signal
+        also handles cleanup when when workbench is deselcted
+
+        args:
+            index: positional argument emited by the device_comboBox
+        """
+
+        # close workbench
+        if index == 0:
+            # close wb_toolbar
+            self.wb_toolbar.clear()
+            self.wb_toolbar.hide()
+            if self.wb_widget is not None:
+                # delete widget from memory
+                self.wb_widget.deleteLater()
+            # clean up parents references to workbench
+            self.wb_widget = None
+            self.wb = None
+
+        # open workbench
         else:
-            if self.frame.layout() is not None:
-                self.del_all_in_layout(self.frame.layout())
-                self.replace_frame()
             # dynamically import wb based on device selection
             # this is the reason that the naming convention is important
+            self.logger.info('loading workbench...')
+            self.wb_toolbar.clear()
+
+            # garbage cleanup if necessary
+            if self.wb_widget is not None:
+                old = self.wb_widget
+                old.deleteLater()
+
+            # get the new workbench contents
+            self.wb_widget = QtWidgets.QWidget()
             device = self.device_comboBox.currentText()
-            class_name = 'my_'+device+'_wb'
-            mod_path = 'wb.'+device+'.'+class_name
-            self.dynamic_import(mod_path, class_name)
+            class_name = ''.join(['my_', device, '_wb'])
+            module_path = ''.join(['wb.', device, '.', class_name])
+            self.dynamic_import(module_path, class_name)
             wb = getattr(self._module, class_name)()
-            self._wb = wb.run_integrated(self)  # self it parent
-            # so that the child workbench can pull the elements
-            # necessary for its opperation
-            self.frame = self._wb.frame
-            self.frame.show()
-            logging.info('workbench loaded')
+            self.wb = wb.run_integrated(parent=self)
 
-    def dynamic_import(self, mod_path, class_name):
-        """
-        dynamically import a specified module
-        """
-        # this is the code that makes the module import magic happen
-        logging.debug('importing workbench module')
-        self._module = __import__(mod_path, fromlist=[class_name])
+            # put contents in toolbar
+            self.wb_toolbar.addWidget(self.wb_widget)
+            self.parent.addToolBarBreak()  # add new row on toolbar
+            self.parent.addToolBar(self.wb_toolbar)
+            self.wb_toolbar.show()
+            self.logger.info('workbench loaded')
 
-    def del_all_in_layout(self, layout):
+    def dynamic_import(self, module_path, module_name):
         """
-        remove contents of a workbench from memory
+        takes a module path and module name and dynamically
+        imports it, and assigns self._module.
+
+        if not assigned to self._module, the import is
+        cleaned up at the end of the function.
         """
-        logging.debug('deleting ui content from workbench')
-        # this code removes everything from a layout
-        # prior to deletion to prevent memory leaks
-        if layout is not None:
-            while layout.count():
-                item = layout.takeAt(0)
-                widget = item.widget()
-                if widget is not None:
-                    widget.deleteLater()
-                else:
-                    self.del_all_in_layout(layout)
 
-    def replace_frame(self):
+        self.logger.debug('importing workbench module')
+        self._module = __import__(module_path, fromlist=[module_name])
+
+    # -----------------------------------------------------------------------
+    #                       __  __   _
+    #                      |  \/  | (_)
+    #                      | \  / |  _   ___    ___
+    #                      | |\/| | | | / __|  / __|
+    #                      | |  | | | | \__ \ | (__
+    #                      |_|  |_| |_| |___/  \___|
+    # -----------------------------------------------------------------------
+
+    def set_statusbar_right_text(self, text):
         """
-        provide new frame for wb to fill if old one has not
-        been deleted from memory
+        sets the text for the right side
+        of the status bar
         """
-        logging.debug('replacing frame')
-        # capture the parent
-        p = self.frame.parent()
 
-        # capture frame position
-        for i in range(self.gridLayout.count()):
-            type_ = str(self.gridLayout.itemAt(i).widget())
-            if 'QFrame' in type_:  # Make sure it is a QFrame
-                # row, col, rowspan, colspan
-                r, c, rs, cs = self.gridLayout.getItemPosition(i)
-
-        # delete frame widget
-        self.del_all_in_layout(self.gridLayout)
-
-        # the code below is modified from the
-        # file created py the pyuic that turns ui files
-        # into python files.
-
-        # replace the old frame that is now qued for deletion
-        self.frame = QtWidgets.QFrame(p)  # put parent
-        self.frame.setFrameShape(QtWidgets.QFrame.NoFrame)
-        self.frame.setFrameShadow(QtWidgets.QFrame.Raised)
-        self.frame.setObjectName("frame")
-        # add it back into the layout
-        self.gridLayout.addWidget(self.frame, r, c, rs, cs)
-
-    def clearText(self):
-        """
-        clear text while preserving the plainTextEdit's undo stack
-        """
-        logging.info('clearing text')
-        # create a instance of a Q cursor with text doc as parent
-        curs = QtGui.QTextCursor(self.text_area.document())
-        # select all the content
-        curs.select(QtGui.QTextCursor.Document)
-        # delete all the content
-        curs.deleteChar()
-        curs.setPosition(0)
+        self.stat_label.setText(f'current: {text}')
 
     def find(self):
         """
-        find function for text area
+        find function for splitViewTabWidget text,
+        called when the find_pushButton clicked signal emitted
         """
+
         text = self.find_lineEdit.text()  # string to find
-        self.text_area.setFocus()  # ensures the text gets highlighted
-        self.text_area.find(text)  # attempts to find the next instance
+        self.logger.debug(f'searching text for {text}')
+        item = self.get_current_plainTextEdit()
+        item.setFocus()  # ensures the text gets highlighted
+        item.find(text)  # attempts to find the next instance
 
     def replace(self):
         """
-        replace function for text area
+        replace function for splitViewTabWidget text
+        called when the replace_pushButton clicked signal emitted
         """
+
         new = self.replace_lineEdit.text()  # get new text
-        self.text_area.textCursor().removeSelectedText()  # remove old
-        self.text_area.textCursor().insertText(new)  # insert new
+        self.logger.debug(f'replacement text is {new}')
+        item = self.get_current_plainTextEdit()
+        item.textCursor().removeSelectedText()  # remove old
+        item.textCursor().insertText(new)  # insert new
+
+    @property
+    def doc_count(self):
+        """
+        indexes the document count automatically
+        when the doc_count property is used
+        """
+
+        self.d_count += 1
+        return self.d_count
+
+    @property
+    def parent(self):
+        """
+        returns the most up to date parent
+        when the parent attribute is used
+        """
+
+        return self.centralwidget.parentWidget()

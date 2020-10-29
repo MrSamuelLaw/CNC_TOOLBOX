@@ -10,12 +10,33 @@
             "request": "launch",
             "program": "${workspaceFolder}/__main__.py",
             "console": "integratedTerminal"
-        }
+        },
+        {
+            "name": "update",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/tools/sync_ui.py",
+            "console": "integratedTerminal"
+        },
         {
             "name": "launcher",
             "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}/cnc_toolbox.py",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "install",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/install.py",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "tests",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/scratch_n_sniff.py",
             "console": "integratedTerminal"
         }
     ]

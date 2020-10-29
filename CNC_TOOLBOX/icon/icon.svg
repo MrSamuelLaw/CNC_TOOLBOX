@@ -16,9 +16,9 @@
    id="svg8"
    inkscape:version="0.92.4 (5da689c313, 2019-01-14)"
    sodipodi:docname="icon.svg"
-   inkscape:export-filename="C:\Users\Samuel\Documents\CodingProjects\Python\in_progress\NC_TOOL_BOX\NC_TOOLBOX_V1\icon\icon.png"
-   inkscape:export-xdpi="384"
-   inkscape:export-ydpi="384">
+   inkscape:export-filename="C:\Users\Samuel\Documents\CodingProjects\Python\in_progress\CNC_TOOLBOX\CNC_TOOLBOX\icon\icon256x256.png"
+   inkscape:export-xdpi="240.27"
+   inkscape:export-ydpi="240.27">
   <defs
      id="defs2">
     <marker
@@ -74,17 +74,17 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="4.0000002"
-     inkscape:cx="-3.1462376"
+     inkscape:cx="-44.896236"
      inkscape:cy="26.794338"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
      units="px"
-     inkscape:window-width="1920"
-     inkscape:window-height="1001"
-     inkscape:window-x="-9"
-     inkscape:window-y="-9"
-     inkscape:window-maximized="1" />
+     inkscape:window-width="730"
+     inkscape:window-height="429"
+     inkscape:window-x="96"
+     inkscape:window-y="96"
+     inkscape:window-maximized="0" />
   <metadata
      id="metadata5">
     <rdf:RDF>
@@ -93,7 +93,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -143,7 +143,7 @@
        d="m 12.825541,287.46291 -1.946204,3.09274 c 0.340569,1.51754 0.539486,3.02098 -0.504805,4.18099 -0.9618646,1.00041 -1.7546014,1.12418 -2.6468254,1.09004 -0.5566143,-0.036 0.4591464,-1.23091 1.0368353,-2.09801 0.5556548,-0.81033 0.046017,-1.25829 -0.4805546,-1.58585 -1.4183906,-0.72093 -1.7417515,0.20345 -2.202445,0.92151 -0.2892655,0.49795 -0.753413,1.34818 -1.0552339,1.05703 -0.6852671,-0.93488 -0.2753336,-2.19973 0.066233,-2.77473 1.699009,-2.2426 2.5215818,-1.70594 3.6763342,-2.0735 l 1.2547284,-1.80744 z"
        style="display:inline;fill:#aaaaaa;fill-opacity:0.95522383;stroke:#000000;stroke-width:0.15931652;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
     <rect
-       style="fill:none;fill-opacity:0.95686275;stroke:#000000;stroke-width:0.406;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       style="fill:none;fill-opacity:0.95686275;stroke:#000000;stroke-width:0.40599999;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        id="rect6247"
        width="26.656769"
        height="26.656769"

@@ -1,8 +1,14 @@
 NOTE, this project will be under active maintenence until CNC_TOOLBOX_2 is released
+
 # CNC_TOOLBOX
  A workbench based gcode editor/cnc toolbox that can be adapted to individual machines
  CNC_TOOLBOX is built on the powerful PySide2 platform and is compatible with and has been 
  tested on windows10 and linux mint 19.1
+ 
+# Installation
+ Download the code from github. Navigate to the folder containing install.py, double click and enjoy!
+ To install workbenches, navigate into the folder named wb, and use the links in the info folder to download
+ workbenches.
 
 # Workbench
  There are several reasons that a workbench based design was adopted.
