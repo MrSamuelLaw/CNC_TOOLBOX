@@ -1,5 +1,0 @@
-clone the following repositories into the wb folder in order to achieve 
-device specific functionality
-
-https://github.com/MrSamuelLaw/sherline_lathe.git
-https://github.com/MrSamuelLaw/shop_bot.git
