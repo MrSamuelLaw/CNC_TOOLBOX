@@ -10,16 +10,17 @@ Window {
     color: "#4C4C4C"
     visible: true
 
+    // For details on the JSON hooks please view qml_filebrowser.py
     function list_dir(pathObject) {
+        // if its a directory
         if (pathObject.is_dir) {
             listModel.clear();                                // clear the old contents
             let files = JSON.parse(fb.dir(pathObject.path));  // read the new contents
-            // append each item
-            for (let f of files) {
-                listModel.append({
-                    filename_: f.name,  // file name
-                    pathObject_: f,     // left actual object, down file logo
-                    source_: `image://fb/${f.path}`  // source image
+            for (let f of files) {      // loop over each item
+                listModel.append({      // add item to list model
+                    filename_: f.name,               // file name
+                    pathObject_: f,                  // left actual object
+                    source_: `image://fb/${f.path}`  // get the file logo
                 });
             }
 
