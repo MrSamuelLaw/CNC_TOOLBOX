@@ -2,11 +2,11 @@
 CNC_TOOLBOX/wb/*
 __pycache__
 .log
-.venv
+*.venv
 launch_tester.py
 multi_launch_test.bat
-.gitattributes
-.vscode
+*.gitattributes
+*.vscode
 
 # exception to the rule
 !CNC_TOOLBOX/wb/info.txt
