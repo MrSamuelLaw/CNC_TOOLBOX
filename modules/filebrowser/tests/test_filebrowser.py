@@ -1,6 +1,5 @@
 import unittest
-
-from pathlib import Path
+from unittest.case import TestCase
 from modules.filebrowser import FileBrowser
 
 
@@ -17,20 +16,11 @@ class TestFileBrowser(unittest.TestCase):
     def test_list_dir(self):
         fb = FileBrowser()
         # run a passing case
-        files, folders = fb.list_dir(fb.curdir)
-        self.assertTrue(len(files))
-        self.assertTrue(len(folders))
+        items = fb.dir(fb.curdir)
+        self.assertTrue(items)
         # run a failing case
         with self.assertRaises(ValueError):
-            fb.list_dir(str(__file__))
-
-    def test_up_one(self):
-        # part that works
-        fb = FileBrowser()
-        fb.up_one()
-        with self.assertRaises(ValueError):
-            while fb.up_one():
-                pass
+            fb.dir(str(__file__))
 
 
 if __name__ == "__main__":
