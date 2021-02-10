@@ -5,6 +5,8 @@ __pycache__
 .venv
 launch_tester.py
 multi_launch_test.bat
+.gitattributes
+.vscode
 
 # exception to the rule
 !CNC_TOOLBOX/wb/info.txt
