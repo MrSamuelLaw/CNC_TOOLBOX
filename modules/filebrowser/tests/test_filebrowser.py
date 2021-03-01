@@ -1,5 +1,5 @@
 import unittest
-from unittest.case import TestCase
+from datetime import datetime
 from modules.filebrowser import FileBrowser
 
 
@@ -21,6 +21,20 @@ class TestFileBrowser(unittest.TestCase):
         # run a failing case
         with self.assertRaises(ValueError):
             fb.dir(str(__file__))
+
+    def test_st_mtime_to_string(self):
+        fb = FileBrowser()
+        # create a time stamp
+        expected = datetime.now()
+        # convert to string and back again
+        string_time = fb.st_mtime_to_string(expected.timestamp())
+        result = datetime.strptime(string_time, fb._timestamp_format)
+        # assert the parts we care about are equal
+        self.assertEqual(expected.day, result.day)
+        self.assertEqual(expected.month, result.month)
+        self.assertEqual(expected.year, result.year)
+        self.assertEqual(expected.hour, result.hour)
+        self.assertEqual(expected.min, result.min)
 
 
 if __name__ == "__main__":

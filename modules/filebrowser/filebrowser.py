@@ -2,6 +2,7 @@
 
 from pathlib import Path
 from typing import Union
+from datetime import datetime
 
 
 class FileBrowser():
@@ -12,6 +13,7 @@ class FileBrowser():
 
     # class variables
     _default_dir_object = Path.cwd()
+    _timestamp_format = "%I:%M%p - %m/%d/%Y"
 
     def __init__(self) -> None:
         super().__init__()
@@ -44,3 +46,10 @@ class FileBrowser():
             raise ValueError("path is file not directory")
         else:
             raise ValueError("path is not directory or file")
+
+    def st_mtime_to_string(self, seconds: float) -> str:
+        """Converts the float, as returned by st_mtime attribute
+        of the pathlib.stat() function, into a string."""
+        time = datetime.fromtimestamp(seconds)
+        string = time.strftime(self._timestamp_format)
+        return string

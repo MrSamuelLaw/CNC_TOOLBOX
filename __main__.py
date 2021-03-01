@@ -1,22 +1,30 @@
-#!/usr/bin/env python3
+#!./.venv/Scripts/python.exe
 
 import sys
 from pathlib import Path
+from PySide6.QtQml import QQmlDebuggingEnabler
 from PySide6.QtQuickControls2 import QQuickStyle
-from PySide6.QtGui import QGuiApplication
+from PySide6.QtGui import QGuiApplication, Qt
 from PySide6.QtQml import QQmlApplicationEngine
 from modules.filebrowser import QmlFileBrowser
 
 
 if __name__ == "__main__":
+    # uncomment these two lines to enable qml debugging
+    debug_enabler = QQmlDebuggingEnabler()
+    # sys.argv += ["-qmljsdebugger=port:1234,block"]
+
     # cmd line args
     sys.argv += ["--platform", "windows:darkmode=2"]  # make dark mode
     # enable what you see is what you get from qt designer
     QQuickStyle.setStyle("Basic")
+    # enable qml debugger
 
     # top level objects
-    app = QGuiApplication(sys.argv)                   # create the app
-    engine = QQmlApplicationEngine()                  # create the engine
+    QGuiApplication.setAttribute(Qt.AA_UseDesktopOpenGL)      # specify how to render
+    QGuiApplication.setAttribute(Qt.AA_EnableHighDpiScaling)  # enable high dpi
+    app = QGuiApplication(sys.argv)            # create the app
+    engine = QQmlApplicationEngine()           # create the engine
 
     # exposeing python object to qml
     context = engine.rootContext()        # context object
