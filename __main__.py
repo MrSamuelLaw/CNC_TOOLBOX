@@ -6,7 +6,8 @@ from PySide6.QtQml import QQmlDebuggingEnabler
 from PySide6.QtQuickControls2 import QQuickStyle
 from PySide6.QtGui import QGuiApplication, Qt
 from PySide6.QtQml import QQmlApplicationEngine
-from modules.filebrowser import QmlFileBrowser
+from modules.file_handling import QMLFileHandler
+from modules.sherline_lathe import QMLToolTableGenerator
 
 
 if __name__ == "__main__":
@@ -23,18 +24,22 @@ if __name__ == "__main__":
     # top level objects
     QGuiApplication.setAttribute(Qt.AA_UseDesktopOpenGL)      # specify how to render
     QGuiApplication.setAttribute(Qt.AA_EnableHighDpiScaling)  # enable high dpi
-    app = QGuiApplication(sys.argv)            # create the app
-    engine = QQmlApplicationEngine()           # create the engine
+    app = QGuiApplication(sys.argv)   # create the app
+    engine = QQmlApplicationEngine()  # create the engine
 
     # exposeing python object to qml
-    context = engine.rootContext()        # context object
-    fb = QmlFileBrowser()                 # create QFileBrowser
-    context.setContextProperty("fb", fb)  # expose fb Slots to qml
-    engine.addImageProvider("fb", fb)     # expose fb requestPixmap
+    context = engine.rootContext()                          # context object
+    filehandler = QMLFileHandler()                          # create QMLFileHandler
+    tool_table_generator = QMLToolTableGenerator()          # create QMLToolTableGenerator
+    context.setContextProperty("filehandler", filehandler)                    # expose QMLFileHandler
+    context.setContextProperty("tool_table_generator", tool_table_generator)  # expose QMLFileHandler
+
+    # setup image providers
+    # engine.addImageProvider("fb", fb)     # expose fb requestPixmap
 
     # component loading
     url = Path.joinpath(Path(__file__).parent, "qml")  # set the path
-    engine.load(str(url.joinpath("FileBrowser.qml")))  # load the components
+    engine.load(str(url.joinpath("main.qml")))         # load the components
 
     # run the app
     if not engine.rootObjects():
