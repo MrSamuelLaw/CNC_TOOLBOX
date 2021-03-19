@@ -8,6 +8,8 @@ multi_launch_test.bat
 *.gitattributes
 *.vscode
 *.pyproject
+*.virtual_documents
+*.ipynb_checkpoints
 
 # exception to the rule
 !CNC_TOOLBOX/wb/info.txt

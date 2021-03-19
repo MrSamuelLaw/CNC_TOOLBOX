@@ -1,5 +1,0 @@
-onClicked: ()=>{
-                           let curdir = JSON.parse(fb.curdir());
-                           let parent = JSON.parse(fb.parent(curdir.path));
-                           list_dir(parent);
-                       }

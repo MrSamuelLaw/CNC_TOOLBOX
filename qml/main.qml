@@ -29,7 +29,6 @@ ApplicationWindow {
         else if (response.status === false)
         {
             // print out the results to the terminal
-            terminal.writeToDisplay("Failed with the following errors:");
             terminal.writeToDisplay(response.message);
         }
 
