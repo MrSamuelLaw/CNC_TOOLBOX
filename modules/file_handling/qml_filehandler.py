@@ -1,5 +1,18 @@
-from pathlib import Path
+import pathlib
+from typing import Union
+from pydantic.main import BaseModel
 from PySide6.QtCore import QObject, Slot
+from modules.common.decorators import PydanticSlot
+from modules.common.models import Response
+
+
+class FileModel(BaseModel):
+    path: pathlib.Path
+    text: Union[str, None]
+
+
+class FileModelResponse(Response):
+    text: Union[str, None]
 
 
 class QMLFileHandler(QObject):
@@ -13,14 +26,34 @@ class QMLFileHandler(QObject):
         super().__init__()
 
     @Slot(str, result=str)
-    def read_text_file(self, url: str) -> str:
+    @PydanticSlot(model=FileModel)
+    def read_text_file(self, file: FileModel) -> Response:
         """Slot for opening text files"""
-        file = Path(url)
-        text = str(file.read_text())
-        return text
+        try:
+            file.text = str(file.path.read_text())
+            r = FileModelResponse(
+                status=True,
+                message="file read successfully",
+                text=file.text
+            )
+        except Exception as e:
+            r = FileModelResponse(
+                status=False,
+                message="\n".join([f"failed to read from file at {file.path}",
+                                   f"with the following error:\n{str(e)}"])
+            )
+        return r
 
-    @Slot(str, str)
-    def write_text_file(self, url: str, text: str):
+    @Slot(str, result=str)
+    @PydanticSlot(model=FileModel)
+    def write_text_file(self, file: FileModel) -> Response:
         """Slot for opening text files"""
-        file = Path(url)
-        file.write_text(text, 'utf-8')
+        try:
+            file.path.write_text(file.text, 'utf-8')
+            r = Response(status=True,
+                         message="file written to successfully",)
+        except Exception as e:
+            r = Response(status=False,
+                         message="\n".join([f"failed to write to file at {file.path}",
+                                            f"with the following error:\n{str(e)}"]))
+        return r

@@ -68,9 +68,11 @@ ApplicationWindow {
         function import_file(){
             let [type, url] = String(fileDialog.file).split("///");  // collect the type and url
             try {
-                terminal.writeToDisplay(`importing from ${url}`);     // display to terminal
-                let str = String(filehandler.read_text_file(url));  // request the text from backend
-                textEditor.text = str;                              // set text to textArea
+                terminal.writeToDisplay(`importing from ${url}`);                // display to terminal
+                let payload = JSON.stringify({"path": url});                     // create the payload
+                let response = JSON.parse(filehandler.read_text_file(payload));  // request the text from backend
+                terminal.writeToDisplay(response.message);                       // write the response back
+                textEditor.text = response.text;                                 // set text to textArea
             }
             catch(error){
                 terminal.writeToDisplay(error); // write any errors to terminal
@@ -82,8 +84,10 @@ ApplicationWindow {
             let [type, url] = String(fileDialog.file).split("///");  // collect the type and url
             let str = textEditor.text;                               // set text to textArea
             try {
-                filehandler.write_text_file(url, str);        // request the text be written using backend
-                terminal.writeToDisplay(`exporting to ${url}`);  // display to terminal
+                terminal.writeToDisplay(`exporting to ${url}`);                   // display to terminal
+                let payload = JSON.stringify({"path": url, "text": str});         // gererate the payload
+                let response = JSON.parse(filehandler.write_text_file(payload));  // request the text be written using backend
+                terminal.writeToDisplay(response.message)                         // write the response to the terminal
             }
             catch(error){
                 terminal.writeToDisplay(error); // write any errors to terminal

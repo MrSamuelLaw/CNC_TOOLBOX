@@ -1,6 +1,4 @@
-
 import functools
-import traceback, sys
 from PySide6.QtCore import QObject
 from .models import Response
 
