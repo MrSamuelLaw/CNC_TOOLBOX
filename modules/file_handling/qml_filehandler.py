@@ -27,7 +27,7 @@ class QMLFileHandler(QObject):
 
     @Slot(str, result=str)
     @PydanticSlot(model=FileModel)
-    def read_text_file(self, file: FileModel) -> Response:
+    def read_text_file(self, file: FileModel) -> FileModelResponse:
         """Slot for opening text files"""
         try:
             file.text = str(file.path.read_text())

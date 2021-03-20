@@ -35,6 +35,8 @@ class QMLToolTableGenerator(QObject):
 
         try:
             tool_table = ttg.generate(payload.text)  # generate the tool table
+            if not tool_table:
+                raise ValueError("No tools found")
         except Exception as e:
             r = ToolTableResponse(status=False,
                                   message=str(e))

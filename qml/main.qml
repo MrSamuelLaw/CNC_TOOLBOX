@@ -3,6 +3,7 @@ import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.11
 import Qt.labs.platform 1.1
 
+
 ApplicationWindow {
     id: root
     width: 900
@@ -152,8 +153,8 @@ ApplicationWindow {
                     anchors.fill: parent
                 }
                 onHoveredChanged: hovered ?
-                                  background.color = "#cc000000":
-                                  background.color = "#00000000";
+                                      background.color = "#cc000000":
+                                      background.color = "#00000000";
 
                 onClicked: {
                     let cmd = "import";
@@ -185,8 +186,8 @@ ApplicationWindow {
                     anchors.fill: parent
                 }
                 onHoveredChanged: hovered ?
-                                  background.color = "#cc000000":
-                                  background.color = "#00000000"
+                                      background.color = "#cc000000":
+                                      background.color = "#00000000"
                 onClicked: {
                     let cmd = "parse_tools";
                     terminal.writeToDisplay(cmd, false);
@@ -217,8 +218,8 @@ ApplicationWindow {
                 Layout.bottomMargin: 0
                 Layout.topMargin: 0
                 onHoveredChanged: hovered ?
-                                  background.color = "#cc000000":
-                                  background.color = "#00000000";
+                                      background.color = "#cc000000":
+                                      background.color = "#00000000";
                 onClicked: {
                     let cmd = "export";
                     terminal.writeToDisplay(cmd, false);
@@ -241,10 +242,37 @@ ApplicationWindow {
     TextEditor {
         id: textEditor
         anchors.top: hud.bottom
-        anchors.bottom: terminal.top
+        anchors.bottom: dragBar.top
         anchors.bottomMargin: 0
         anchors.left: parent.left
         anchors.right: parent.right
+    }
+
+    Rectangle {
+        id: dragBar
+        x: 0
+        y: 320
+        height: 2
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.rightMargin: 0
+        anchors.leftMargin: 0
+        MouseArea {
+            drag.target: parent
+            anchors.fill: parent
+            hoverEnabled: true
+            onEntered: {cursorShape = Qt.SizeVerCursor;}
+            property variant pressPos: Qt.point(0, 0);
+            onPressed: {
+                let gp = mapToGlobal(mouse.x, mouse.y);
+                this.pressPos = Qt.point(gp.x, gp.y);
+            }
+            onPositionChanged: {
+                let gp = mapToGlobal(mouse.x, mouse.y);
+                let delta = Qt.point(gp.x - pressPos.x, gp.y - pressPos.y);
+                y += delta.y;
+            }
+        }
     }
 
     Terminal {
@@ -254,6 +282,7 @@ ApplicationWindow {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom
+        anchors.top: dragBar.bottom
         anchors.rightMargin: 0
         anchors.leftMargin: 0
         anchors.bottomMargin: 0
@@ -265,12 +294,13 @@ ApplicationWindow {
         }
     }
 
+
 }
 
 
 
 /*##^##
 Designer {
-    D{i:0;formeditorZoom:0.9}D{i:18}
+    D{i:0;formeditorZoom:0.9}
 }
 ##^##*/
