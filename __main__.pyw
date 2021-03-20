@@ -6,10 +6,8 @@ from PySide6.QtQml import QQmlDebuggingEnabler
 from PySide6.QtQuickControls2 import QQuickStyle
 from PySide6.QtGui import QGuiApplication, Qt
 from PySide6.QtQml import QQmlApplicationEngine
-from pydantic.main import BaseModel
 from modules.file_handling import QMLFileHandler
 from modules.sherline_lathe import QMLToolTableGenerator
-from pydantic.schema import schema
 
 
 if __name__ == "__main__":

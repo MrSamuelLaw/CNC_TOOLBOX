@@ -3,8 +3,9 @@ from pathlib import Path
 from typing import Union
 from pydantic import BaseModel
 from pydantic.main import Extra
-from PySide6.QtCore import QObject, Slot
-from modules.common import PydanticSlot, Response
+from PySide6.QtCore import QObject
+from modules.common.models import Response
+from modules.common.decorators import PydanticSlot
 from modules.sherline_lathe import tool_table_generator as ttg
 
 
@@ -27,7 +28,6 @@ class QMLToolTableGenerator(QObject):
     def __init__(self):
         super().__init__()
 
-    @Slot(str, result=str)
     @PydanticSlot(model=GCode)
     def generate(self, payload: GCode) -> Response:
         """Generates a tool table from gcode
@@ -46,8 +46,6 @@ class QMLToolTableGenerator(QObject):
                                   tool_table=tool_table)
         return r
 
-
-    @Slot(str, result=str)
     @PydanticSlot(model=ToolTable)
     def upload(self, payload: ToolTable) -> Response:
         """Saves the tool table generated from a gcode file

@@ -1,7 +1,7 @@
 import pathlib
 from typing import Union
 from pydantic.main import BaseModel
-from PySide6.QtCore import QObject, Slot
+from PySide6.QtCore import QObject
 from modules.common.decorators import PydanticSlot
 from modules.common.models import Response
 
@@ -25,7 +25,6 @@ class QMLFileHandler(QObject):
     def __init__(self):
         super().__init__()
 
-    @Slot(str, result=str)
     @PydanticSlot(model=FileModel)
     def read_text_file(self, file: FileModel) -> FileModelResponse:
         """Slot for opening text files"""
@@ -44,7 +43,6 @@ class QMLFileHandler(QObject):
             )
         return r
 
-    @Slot(str, result=str)
     @PydanticSlot(model=FileModel)
     def write_text_file(self, file: FileModel) -> Response:
         """Slot for opening text files"""
