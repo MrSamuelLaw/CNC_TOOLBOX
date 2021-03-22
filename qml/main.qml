@@ -289,8 +289,9 @@ ApplicationWindow {
         Component.onCompleted: {
             terminal.functionDict["import"] = fileDialog.run_import_dialog;
             terminal.functionDict["export"] = fileDialog.run_export_dialog;
-            terminal.functionDict["clear_text_editor"] = ()=>{textEditor.text = ""; terminal.endFunction();}
             terminal.functionDict["parse_tools"] = root.parse_tools;
+            terminal.functionDict["exit"] = ()=>{Qt.quit();}
+            terminal.functionDict["clear_text_editor"] = ()=>{textEditor.text = ""; terminal.endFunction();}
         }
     }
 

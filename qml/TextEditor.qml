@@ -41,6 +41,7 @@ ScrollView {
 
         TextArea {
             id: textArea
+            selectByMouse: true
             width: textEditor.width - numberLine.width
             height: textEditor.height
             color: "#ffffff"

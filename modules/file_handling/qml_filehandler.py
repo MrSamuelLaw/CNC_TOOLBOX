@@ -2,8 +2,8 @@ import pathlib
 from typing import Union
 from pydantic.main import BaseModel
 from PySide6.QtCore import QObject
-from modules.common.decorators import PydanticSlot
 from modules.common.models import Response
+from modules.common.decorators import PydanticSlot
 
 
 class FileModel(BaseModel):
